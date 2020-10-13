@@ -1,0 +1,47 @@
+---
+title: "Gathering R-squared values, etc."
+author: "Michael J. Braus"
+date: "`r Sys.Date()`"
+output:
+  pdf_document:
+    toc_depth: 2
+    fig_caption: yes
+    number_sections: yes
+    latex_engine: xelatex
+geometry: margin = 1.0in
+header-includes:
+  \usepackage{placeins}
+  \usepackage{fancyhdr}
+  \pagestyle{fancy}
+  \usepackage{setspace}
+  \usepackage{chngcntr}
+  \setlength{\headheight}{23pt}
+  \rhead{}
+  \lfoot{REPORT}
+  \rfoot{Braus, M. J.}
+  \counterwithin{figure}{section}
+  \counterwithin{table}{section}
+  \usepackage{lineno}
+  \linenumbers
+---
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(fig.path = 'rmd-output/',
+                      echo = FALSE, warning = FALSE, message = FALSE, cache = FALSE)
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(dev="png", dpi=300)
+library(knitr)
+library(ggplot2)
+```
+
+```{r data}
+dat <- read.csv("data.csv", header=T)
+str(dat)
+```
+
+```{r kable}
+x <- kable(dat, align = 'c', col.names = c("Soil Set", "Acidity Metric", "Solution:Soil Ratio", "Intercept", "Slope", "R-squared"))
+```

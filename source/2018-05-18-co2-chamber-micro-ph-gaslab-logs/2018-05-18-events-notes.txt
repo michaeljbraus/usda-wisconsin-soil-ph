@@ -1,0 +1,35 @@
+2018-05-18-100g-test
+
+lowCO2: 750-800 ppm
+eq time: 8:23AM
+meas time: 8:33AM
+
+HoghCO2: 2.5-2.7%
+eq time: 9:30AM
+meas time: 9:50AM
+
+WATER 100 microL
+
+tube,pH.lowCO2,pH.highCO2
+1,8.61,6.99
+2,7.70,5.74
+3,7.51,6.16
+4,7.36,5.80
+5,6.90,5.80
+
+eq protocol:
+1. mark time and open all tubes. 
+2. wait eq time of set period
+3. close tubes
+4. open tubes in "two ahead" rhythm
+5. meaure, close, open two ahead
+6. finish and mark time
+
+comments:
+- tube 1 was meas right after 10.0 pH calibration. maybe add "rinse tube" ahead of the others?
+- note the dec. in pH with order. maybe bump up eq time to 20+ minutes
+- maybe add controls of water every 10 samples
+- volcano rxn works great!
+- 2nd eq tim = 20 minutes
+- 2nd measurements would drop a lot then climb 0.1-0.2 before stabilizing. take min value ever?
+- 

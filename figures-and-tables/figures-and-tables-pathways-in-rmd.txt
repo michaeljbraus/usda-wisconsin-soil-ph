@@ -1,0 +1,20 @@
+Figures and Tables: 
+Figure 1: source/2018-09-20-sfal-soil-chemical-analysis/report-output/analysis-depth-1.png
+Figure 2: source/2020-03-12-hatch-final-data-merged/output-rmd/jackson-plot-wiscons-spooner-1-custom-2.png
+Figure 3: source/2020-03-12-hatch-final-data-merged/output-rmd/multifactoral-grid-ph-custom-3.png
+Figure 4: source/2020-03-14-bic-plot-assembled-by-thea/braus-bic-4plot.png
+Figure 5: source/2020-03-12-hatch-final-data-merged/output-rmd/nmds-bray-soilph-Lab.CO2.pH.one2one-both-studies-1-custom.png
+Figure 6: source/2020-03-25-fix-permanova/rmd-output/rsq-plot-1-custom-2.png
+
+Supplemental Materials: 
+SupFig 1: source/soil-microhabitat-proton-flow.png
+SupFig 2: source/2018-08-08-field-soil-collection/sites-and-soils-samples/sites-map-ph-wi-copy.png
+SupFig 3: source/2019-01-02-small-multifactorial-for-sssa/soil-microph-acidimetry-glove-box.jpg
+SupFig 4: source/2018-04-30-co2-chamber-tests/custom-may-01-2018-32mlvin-4gsb-opened-at-12h45m/custom-figure.png
+SupFig 5: source/2020-03-24-whitman-figure-request/wisconsin-samples-ph.png
+SupFig 6: source/2020-03-24-whitman-figure-request/spooner-samples-ph.png
+SupFig 7: source/2020-03-24-whitman-figure-request/wisconsin-samples-hplus.png
+SupFig 8: source/2020-03-24-whitman-figure-request/spooner-samples-hplus.png
+SupFig 9: source/2019-08-30-dna-extraction-ph-vs-soil-ph/output/lysate-ph-histogram-1-custom.png
+SupFig 10: source/1958-jackson-soil-chemical-analysis-scanned-fig.3-3.relation-of-observed-soil-ph-values-to-soil-water-ratios-copy-in-situ.png
+SupTab 1: source/2020-02-19-field-sites-lat-long-table/2020-02-19-field-sites-lat-long-table.png

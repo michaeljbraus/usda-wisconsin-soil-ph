@@ -1,0 +1,17 @@
+Soil Set,Acidity Metric,Solution:Soil Ratio,Intercept,Slope,R-squared
+Wisconsin Soils,pH,1-to-1,-0.442,1.049,0.976
+Wisconsin Soils,pH,1-to-2,-0.234,1.065,0.927
+Wisconsin Soils,pH,1-to-3,0.099,1.033,0.967
+Wisconsin Soils,pH,1-to-4,1.001,0.862,0.959
+Wisconsin Soils,a(H+),1-to-1,0,1.687,0.941
+Wisconsin Soils,a(H+),1-to-2,0,0.976,0.897
+Wisconsin Soils,a(H+),1-to-3,0,0.711,0.959
+Wisconsin Soils,a(H+),1-to-4,0,0.58,0.981
+Long-term pH Trial,pH,1-to-1,0.218,0.965,0.843
+Long-term pH Trial,pH,1-to-2,0.639,0.91,0.928
+Long-term pH Trial,pH,1-to-3,1.19,0.842,0.909
+Long-term pH Trial,pH,1-to-4,1.6,0.748,0.867
+Long-term pH Trial,a(H+),1-to-1,0,1.075,0.963
+Long-term pH Trial,a(H+),1-to-2,0,0.707,0.978
+Long-term pH Trial,a(H+),1-to-3,0,0.507,0.937
+Long-term pH Trial,a(H+),1-to-4,0,0.613,0.976

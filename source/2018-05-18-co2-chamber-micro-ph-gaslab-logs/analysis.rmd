@@ -1,0 +1,41 @@
+---
+title: "CO2 Chamber: 100 g sodium bicarbonate in 5% acetic acid (5 hrs)"
+author: "Michael J. Braus"
+date: "`r Sys.Date()`"
+output:
+  pdf_document:
+    toc: no
+---
+```{r global_options, include=FALSE}
+setwd(dir = "~/Dropbox/Hatch-pH-of-WI-Soils/Add/Experiments/2018-05-18-CO2-Chamber-micro-pH-GasLab-Logs/")
+knitr::opts_chunk$set(fig.width = 5, fig.height = 3, fig.path = 'Output/', warning = FALSE, message = FALSE, cache = TRUE)
+```
+
+```{r load_packages}
+library(ggplot2)
+```
+
+```{r load_data}
+dat1 <- read.csv(file = "May-18-2018-100g-test.csv", header = T)
+dat2 <- read.csv(file = "May-18-2018-failed-test-today-but-last-point-before-opening.csv", header = T)
+dat1$CO2 <- as.numeric(dat1$CO2)
+dat2$CO2 <- as.numeric(dat2$CO2)
+```
+
+This plot shows the beginning of the reaction. 
+
+```{r fancy_plot_1, fig.height=6, fig.width=7}
+p <- ggplot(dat1, aes(x = Reading.30s, y = CO2))
+p <- p + xlab("Reading (30 sec)") + ylab("CO2 (ppm)") + geom_point()
+p + theme_bw()
+```
+
+At the end of the reaction, I opened the chamber and did another set of readings. 
+
+```{r fancy_plot_2, fig.height=6, fig.width=7}
+p <- ggplot(dat2, aes(x = Reading.30s, y = CO2))
+p <- p + xlab("Reading (30 sec)") + ylab("CO2 (ppm)") + geom_point()
+p + theme_bw()
+```
+
+The chamber held the %CO2 level for long enough to run a long set of measurements. 

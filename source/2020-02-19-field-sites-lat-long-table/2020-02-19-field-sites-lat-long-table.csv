@@ -1,0 +1,24 @@
+Pit ID,Research Station,Latitude,Longitude,Soil Series,Soil pH (WSS)
+K1,Kemp,45.840728,-89.675552,"Sayner loamy sand, 15 to 45 percent slopes",5.4
+K3,Kemp,45.838336,-89.674265,"Sayner loamy sand, 15 to 45 percent slopes",5.4
+K4,Kemp,45.850398,-89.650597,"Vilas loamy sand, 6 to 15 percent slopes",5.5
+R1,Rhinelander,45.664798,-89.267941,"Vilas loamy sand, 0 to 6 percent slopes",5.5
+R2,Rhinelander,45.654330,-89.265325,"Vilas loamy sand, 0 to 6 percent slopes",5.5
+R3,Rhinelander,45.666506,-89.217474,"Padus-Pence sandy loams, 0 to 6 percent slopes",5.4
+M1,Marshfield,44.760456,-90.097195,"Withee silt loam, 0 to 3 percent slopes",5.6
+M2,Marshfield,44.762254,-90.099298,"Loyal silt loam, 1 to 6 percent slopes",5.7
+M3,Marshfield,44.763700,-90.112336,"Marshfield silt loam, 0 to 2 percent slopes",5.1
+Sp,Spooner,45.825397,-91.868769,"Mahtomedi-Cress complex, 2 to 6 percent slopes",5.8
+H1,Hancock,44.120662,-89.539842,"Sparta loamy sand, 0 to 2 percent slopes",6.2
+H2,Hancock,44.118998,-89.546065,"Plainfield sand, 0 to 2 percent slopes",5.3
+A249,Arlington,43.304503,-89.363423,"Channahon silt loam, 12 to 30 percent slopes, eroded",7.3
+A341,Arlington,43.302053,-89.354501,"Saybrook silt loam, 6 to 12 percent slopes, eroded",6.5
+L2,Lancaster,42.83506,-90.790822,"Fayette silt loam, uplands, 6 to 10 percent slopes, moderately eroded",6.0
+L3,Lancaster,42.829005,-90.794585,"Palsgrove silt loam, 6 to 12 percent slopes, moderately eroded",6.4
+L4,Lancaster,42.842317,-90.794148,"Dubuque soils, deep, 10 to 15 percent slopes, moderately eroded",6.2
+W4,West Madison,43.05465,-89.535243,"Griswold loam, 12 to 20 percent slopes, eroded",6.9
+W5,West Madison,43.065371,-89.546135,"Plano silt loam, gravelly substratum, 2 to 6 percent slopes",6.6
+W7,West Madison,43.070229,-89.542162,"Dresden silt loam, 6 to 12 percent slopes, eroded",6.6
+P1,Peninsular,44.879879,-87.333159,"Onaway-Ossineke fine sandy loams, moraine, 1 to 6 percent slopes",6.6
+P2,Peninsular,44.881345,-87.331402,"Longrie Loam, 2 to 6 percent slopes",6.7
+P4,Peninsular,44.8806,-87.323873,"Summerville loam, 0 to 2 percent slopes",7.3

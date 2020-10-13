@@ -1,0 +1,521 @@
+---
+title: "2019-08-25-hatch-ph-multifactorial-merged"
+author: "Michael J. Braus"
+date: "`r Sys.Date()`"
+output:
+  pdf_document:
+    toc: yes
+    toc_depth: 2
+    number_sections: false
+---
+
+\fontsize{12}{14}
+\selectfont{}
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(fig.path = 'output/', echo = TRUE, warning = FALSE, message = FALSE, cache = TRUE)
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(dev="png", dpi=300)
+```
+
+# Preliminary Look
+
+
+## All Data: 
+[...]
+
+```{r}
+library(ggplot2)
+```
+
+```{r}
+dat <- read.csv(file = "multifactorial/2019-08-25-hatch-ph-multifactorial-merged.csv", header = T)
+dat$co2.pH.diff <- dat$Lab.CO2.MicropH-dat$High.CO2.MicropH
+dat$co2.exp.pH.diff <- 10^-(dat$Lab.CO2.MicropH)-10^-(dat$High.CO2.MicropH)
+str(dat)
+```
+
+```{r}
+qplot(data = dat, x = Lab.CO2.MicropH, y = High.CO2.MicropH, color = Water.Soil.Ratio) + scale_x_continuous(limits = c(4.8, 8.1)) + scale_y_continuous(limits = c(4.8, 8.1)) + theme_bw() + geom_smooth(method = "lm") + geom_abline(slope = 1, intercept = 0, color = "black")
+```
+
+```{r}
+qplot(data = dat, x = Lab.CO2.MicropH, y = High.CO2.MicropH, color = Station.Name)
+```
+
+```{r}
+qplot(data = dat, x = 10^-Lab.CO2.MicropH, y = 10^-High.CO2.MicropH, color = Water.Soil.Ratio) + scale_x_continuous(limits = c(10^-8.1, 10^-4.8)) + scale_y_continuous(limits = c(10^-8.1, 10^-4.8)) + theme_bw() + geom_smooth(method = "lm") + geom_abline(slope = 1, intercept = 0, color = "black")
+```
+
+```{r}
+qplot(data = dat, x = 10^-Lab.CO2.MicropH, y = 10^-High.CO2.MicropH, color = Station.Name)
+```
+
+```{r}
+qplot(dat$co2.pH.diff, geom="histogram", color = dat$Station.Name, alpha = 0.4, binwidth = 0.05) 
+```
+
+```{r}
+qplot(100*(dat$co2.exp.pH.diff)/(10^-dat$Lab.CO2.MicropH), geom="histogram", color = dat$Station.Name, alpha = 0.4, binwidth = 3) 
+```
+
+```{r}
+t.test(dat$Lab.CO2.MicropH, dat$High.CO2.MicropH, paired = TRUE, alternative = "two.sided")
+```
+
+```{r}
+qplot(data = dat, x = Real.Water.Soil.ratio, y = Lab.CO2.MicropH, color = Station.Name)
+```
+
+```{r}
+qplot(data = dat, x = Real.Water.Soil.ratio, y = 10^-Lab.CO2.MicropH, color = Water.Soil.Ratio)
+```
+
+```{r}
+qplot(data = dat, x = Real.Water.Soil.ratio, y = 10^-Lab.CO2.MicropH, color = Station.Name)
+```
+
+```{r}
+qplot(data = dat, x = Real.Water.Soil.ratio, y = 10^-Lab.CO2.MicropH, color = Texture.Name)
+```
+
+```{r}
+qplot(data = dat, x = Perc.Clay, y = 10^-Lab.CO2.MicropH, color = Station.Name)
+```
+
+## Replication of Jackson c.1950: 
+
+```{r}
+qplot(data = dat, x = Real.Water.Soil.ratio, y = Lab.CO2.MicropH, color = Sample.ID) + geom_line() + theme(legend.position="none")
+```
+
+```{r}
+qplot(data = dat, x = Real.Water.Soil.ratio, y = 10^-Lab.CO2.MicropH, color = Sample.ID) + geom_line() + theme(legend.position="none")
+```
+
+```{r}
+qplot(data = dat, x = Real.Water.Soil.ratio, y = High.CO2.MicropH, color = Sample.ID) + geom_line() + theme(legend.position="none")
+```
+
+```{r}
+qplot(data = dat, x = Real.Water.Soil.ratio, y = 10^-High.CO2.MicropH, color = Sample.ID) + geom_line() + theme(legend.position="none")
+```
+
+```{r}
+p <- ggplot(dat, aes(x = Real.Water.Soil.ratio, y = Lab.CO2.MicropH, color = Sample.ID))
+p + geom_point() + geom_smooth(method = "glm", se=F) + theme(legend.position="none")
+```
+
+```{r}
+p <- ggplot(dat, aes(x = Real.Water.Soil.ratio, y = 10^-Lab.CO2.MicropH, color = Sample.ID))
+p + geom_point() + geom_smooth(method = "glm", se=F) + theme(legend.position="none")
+```
+
+```{r}
+p <- ggplot(dat, aes(x = Real.Water.Soil.ratio, y = High.CO2.MicropH, color = Sample.ID))
+p + geom_point() + geom_smooth(method = "glm", se=F) + theme(legend.position="none")
+```
+
+```{r}
+p <- ggplot(dat, aes(x = Real.Water.Soil.ratio, y = 10^-High.CO2.MicropH, color = Sample.ID))
+p + geom_point() + geom_smooth(method = "glm", se=F) + theme(legend.position="none")
+```
+
+```{r}
+p <- ggplot(dat, aes(x = Real.Water.Soil.ratio, y = High.CO2.MicropH, color = Sample.ID))
+p + geom_point() + geom_smooth(method = "glm", se=F) + theme(legend.position="none") + facet_wrap(~Study)
+```
+
+```{r}
+p <- ggplot(dat, aes(x = Real.Water.Soil.ratio, y = 10^-High.CO2.MicropH, color = Sample.ID))
+p + geom_point() + geom_smooth(method = "glm", se=F) + theme(legend.position="none") + facet_wrap(~Study)
+```
+
+```{r}
+p <- ggplot(dat, aes(x = Real.Water.Soil.ratio, y = Lab.CO2.MicropH, color = Sample.ID))
+p + geom_point() + geom_smooth(method = "glm", se=F) + theme(legend.position="none") + facet_wrap(~Station.Name, scales="free")
+```
+
+```{r}
+p <- ggplot(dat, aes(x = Real.Water.Soil.ratio, y = 10^-Lab.CO2.MicropH, color = Sample.ID))
+p + geom_point() + geom_smooth(method = "glm", se=F) + theme(legend.position="none") + facet_wrap(~Station.Name, scales="free")
+```
+
+```{r}
+p <- ggplot(dat, aes(x = Real.Water.Soil.ratio, y = High.CO2.MicropH, color = Sample.ID))
+p + geom_point() + geom_smooth(method = "glm", se=F) + theme(legend.position="none") + facet_wrap(~Station.Name, scales="free")
+```
+
+```{r}
+p <- ggplot(dat, aes(x = Real.Water.Soil.ratio, y = 10^-High.CO2.MicropH, color = Sample.ID))
+p + geom_point() + geom_smooth(method = "glm", se=F) + theme(legend.position="none") + facet_wrap(~Station.Name, scales="free")
+```
+
+## Just Spooner: 
+
+```{r}
+dat.Spooner <- subset(dat, Station.Name=="Spooner")
+t.test(dat.Spooner$Lab.CO2.MicropH, dat.Spooner$High.CO2.MicropH, paired = TRUE, alternative = "two.sided")
+t.test(10^-dat.Spooner$Lab.CO2.MicropH, 10^-dat.Spooner$High.CO2.MicropH, paired = TRUE, alternative = "two.sided")
+```
+
+```{r}
+qplot(data = dat.Spooner, x = Lab.CO2.MicropH, y = High.CO2.MicropH, color = Water.Soil.Ratio)
+```
+
+```{r}
+qplot(data = dat.Spooner, x = 10^-Lab.CO2.MicropH, y = 10^-High.CO2.MicropH, color = Water.Soil.Ratio)
+```
+
+```{r}
+qplot(dat.Spooner$co2.pH.diff, geom="histogram", binwidth = 0.05) 
+```
+
+```{r}
+qplot(100*(dat.Spooner$co2.exp.pH.diff)/(10^-dat.Spooner$Lab.CO2.MicropH), geom="histogram", binwidth = 4) 
+```
+
+## Just Wisconsin: 
+
+```{r}
+dat.Wisconsin <- subset(dat, Station.Name!="Spooner")
+t.test(dat.Wisconsin$Lab.CO2.MicropH, dat.Wisconsin$High.CO2.MicropH, paired = TRUE, alternative = "two.sided")
+t.test(10^-dat.Wisconsin$Lab.CO2.MicropH, 10^-dat.Wisconsin$High.CO2.MicropH, paired = TRUE, alternative = "two.sided")
+```
+
+```{r}
+qplot(data = dat.Wisconsin, x = Lab.CO2.MicropH, y = High.CO2.MicropH, color = Water.Soil.Ratio)
+```
+
+```{r}
+qplot(data = dat.Wisconsin, x = Lab.CO2.MicropH, y = High.CO2.MicropH, color = Station.Name)
+```
+
+```{r}
+qplot(data = dat.Wisconsin, x = 10^-Lab.CO2.MicropH, y = 10^-High.CO2.MicropH, color = Water.Soil.Ratio)
+```
+
+```{r}
+qplot(dat.Wisconsin$co2.pH.diff, geom="histogram", color = dat.Wisconsin$Station.Name, alpha = 0.4, binwidth = 0.05) 
+```
+
+```{r}
+qplot(100*(10^-dat.Wisconsin$co2.exp.pH.diff)/(10^-dat.Wisconsin$Lab.CO2.MicropH), geom="histogram", color = dat.Wisconsin$Station.Name, alpha = 0.4, binwidth = 3) 
+```
+
+
+# Past Preliminary Analysis
+
+We can split the data according to sample sets: "CrossWisc" and "Spooner"
+
+```{r}
+dat.CrossWisc <- subset(dat, Sample.Number <= 65)
+str(dat.CrossWisc)
+```
+
+```{r}
+dat.Spooner <- subset(dat, Sample.Number >= 185)
+str(dat.Spooner)
+```
+
+We can plot of the dry weight and real water soil:soil ratios of each group of data (1:1, 1:2, 1:3, & 1:4 of "CrossWisc" and "Spooner" soil sample sets): 
+
+## CrossWisc
+
+### 1:1
+
+```{r}
+dat.CrossWisc.1to1 <- subset(dat.CrossWisc, Water.Soil.Ratio=="OneToOne")
+plot(dat.CrossWisc.1to1$Real.Water.Soil.ratio, dat.CrossWisc.1to1$Dry.Soil.g, xlim = c(0,2), ylim = c(0,2))
+```
+
+
+### 1:2
+
+```{r}
+dat.CrossWisc.1to2 <- subset(dat.CrossWisc, Water.Soil.Ratio=="OneToTwo")
+plot(dat.CrossWisc.1to2$Real.Water.Soil.ratio, dat.CrossWisc.1to2$Dry.Soil.g, xlim = c(0,2), ylim = c(0,2))
+```
+
+
+### 1:3
+
+```{r}
+dat.CrossWisc.1to3 <- subset(dat.CrossWisc, Water.Soil.Ratio=="OneToThree")
+plot(dat.CrossWisc.1to3$Real.Water.Soil.ratio, dat.CrossWisc.1to3$Dry.Soil.g, xlim = c(0,2), ylim = c(0,2))
+```
+
+
+### 1:4
+
+```{r}
+dat.CrossWisc.1to4 <- subset(dat.CrossWisc, Water.Soil.Ratio=="OneToFour")
+plot(dat.CrossWisc.1to4$Real.Water.Soil.ratio, dat.CrossWisc.1to4$Dry.Soil.g, xlim = c(0,2), ylim = c(0,2))
+```
+
+They all have a similar pattern. 
+
+## Spooner
+
+### 1:1
+
+```{r}
+dat.Spooner.1to1 <- subset(dat.Spooner, Water.Soil.Ratio=="OneToOne")
+plot(dat.Spooner.1to1$Real.Water.Soil.ratio, dat.Spooner.1to1$Dry.Soil.g, xlim = c(0,2), ylim = c(0,2))
+```
+
+
+### 1:2
+
+```{r}
+dat.Spooner.1to2 <- subset(dat.Spooner, Water.Soil.Ratio=="OneToTwo")
+plot(dat.Spooner.1to2$Real.Water.Soil.ratio, dat.Spooner.1to2$Dry.Soil.g, xlim = c(0,2), ylim = c(0,2))
+```
+
+
+### 1:3
+
+```{r}
+dat.Spooner.1to3 <- subset(dat.Spooner, Water.Soil.Ratio=="OneToThree")
+plot(dat.Spooner.1to3$Real.Water.Soil.ratio, dat.Spooner.1to3$Dry.Soil.g, xlim = c(0,2), ylim = c(0,2))
+```
+
+
+### 1:4
+
+```{r}
+dat.Spooner.1to4 <- subset(dat.Spooner, Water.Soil.Ratio=="OneToFour")
+plot(dat.Spooner.1to4$Real.Water.Soil.ratio, dat.Spooner.1to4$Dry.Soil.g, xlim = c(0,2), ylim = c(0,2))
+```
+
+The Spooner sample set has a similar pattern, but it's more grouped than the CrossWisc sample set. This makes sense because their textures are nearly identical. 
+
+
+# Plots with 16S Amplicon Analysis: 
+
+```{r, results="hide" }
+# Intall:
+# BiocManager::install("phyloseq")
+# Load libraries
+library(phyloseq)
+library(dada2)
+library(ggplot2)
+library(RColorBrewer)
+library(vegan)
+```
+
+```{r, results="hide" }
+# Import sequence processing table and check it out
+# How many sequences were retained at each step?
+track = readRDS("reads/track.rds")
+track
+```
+
+```{r, results="hide"}
+# Import final otu table
+OTUs = readRDS("reads/OTUtab.nochim.rds")
+# Change rows and columns so taxa are rows
+OTUs = t(OTUs)
+# Import as phyloseq object table
+otutab = otu_table(OTUs, taxa_are_rows=TRUE)
+head(otutab)
+# Look at lowest-abundance samples
+head(sort(sample_sums(otutab)))
+name = row.names(otutab)[1]
+name
+hist(nchar(row.names(otutab)))
+```
+
+```{r, results="hide"}
+colnames(otutab)
+# The sample names have suffixes appended to them - we just want sample IDs
+# Get names
+names = colnames(otutab)
+# Remove last 17 characters
+newnames = gsub('.{17}$', '', names)
+# Check out names
+newnames
+
+# Assign new names to samples
+colnames(otutab) = newnames
+
+# Same thing if we wanted to simplify OTU names to IDs
+# Instead of sequences (although that's useful)
+otunames=row.names(otutab)
+length(otunames)
+newotunames = paste("OTU",rep(1:length(otunames)),sep="")
+head(newotunames)
+row.names(otutab) = newotunames
+head(otutab)
+
+# Cut off the sampling ID to match metadata
+for (i in 1:length(colnames(otutab))){
+  newname = strsplit(colnames(otutab[i]),"_")[[i]][1]
+  colnames(otutab)[i]=newname
+}
+
+# Import sample data
+samdat = read.csv("hatch-metadata-spooner-copy.csv", header=T)
+# samdat$Sample.ID = as.character(samdat$Sample.ID)
+# samdat$Sample.ID[1:9] = paste("00",samdat$Sample.ID[1:9],sep="")
+# samdat$Sample.ID[10:length(samdat$Sample.ID)] = paste("0",samdat$Sample.ID[10:length(samdat$Sample.ID)],sep="")
+
+# Check we have all the same sample names now
+samdat$MARS.Plot.exp.pH <- as.numeric(10^(-samdat$MARS.Plot.pH))
+samdat$Sample.ID == colnames(otutab)[66:125]
+samdat = sample_data(samdat)
+
+row.names(samdat) = samdat$Sample.ID
+
+# Create phyloseq object
+ps = phyloseq(otu_table=otutab,sample_data=samdat)
+```
+
+```{r, results="hide"}
+ps.melt = psmelt(ps)
+ps.melt
+
+head(ps.melt)
+
+hist(sample_sums(ps))
+
+# Relative abundances
+ps.norm = transform_sample_counts(ps,function(x) x/sum(x))
+head(otu_table(ps.norm))
+sample_sums(ps.norm)
+# Looks good
+
+colnames(sample_data(ps.norm))
+```
+
+```{r PCoA_bray, fig.height=5, fig.width=6}
+row.names(samdat)
+ps.ord.pcoa = ordinate(ps, "PCoA", "bray")
+p = plot_ordination(ps, ps.ord.pcoa, type="samples",label="Names")
+p
+```
+
+```{r NMDS_bray_SoilpH, fig.height=5, fig.width=6}
+ps.ord.nmds = ordinate(ps.norm, "NMDS", "bray",trymax=1000,k=2)
+p = plot_ordination(ps.norm, ps.ord.nmds, type="samples")
+palette = brewer.pal(8, "Spectral")
+p = p + aes(colour=MARS.Plot.pH) + geom_point(size=3) + scale_colour_gradientn(colors=palette)
+p
+```
+
+```{r richness_pH}
+p <- plot_richness(ps, x="MARS.Plot.pH", measures=c("Observed","Shannon"))
+p + geom_point(size=5, alpha=0.7)
+```
+
+```{r permANOVA_1 }
+df = as(sample_data(ps.norm), "data.frame")
+d = phyloseq::distance(ps.norm, "bray") 
+ps.adonis = adonis(d ~ MARS.Plot.exp.pH+MARS.Plot.pH+MARS.Plot.OM.perc+MARS.Plot.P.ppm+MARS.Plot.K.ppm, df)
+ps.adonis
+```
+
+
+# Analysis from Thea: 
+
+```{r}
+library(phyloseq)
+library(dada2)
+library(ggplot2)
+library(RColorBrewer)
+# Load libraries
+
+# Import sequence processing table and check it out
+# How many sequences were retained at each step?
+track = readRDS("track.rds")
+track
+
+# Import final otu table
+OTUs = readRDS("OTUtab.nochim.rds")
+# Change rows and columns so taxa are rows
+OTUs = t(OTUs)
+# Import as phyloseq object table
+otutab = otu_table(OTUs, taxa_are_rows=TRUE)
+head(otutab)
+# Look at lowest-abundance samples
+head(sort(sample_sums(otutab)))
+
+name = row.names(otutab)[1]
+name
+hist(nchar(row.names(otutab)))
+
+colnames(otutab)
+# The sample names have suffixes appended to them - we just want sample IDs
+# Get names
+names = colnames(otutab)
+# Remove last 17 characters
+newnames = gsub('.{17}$', '', names)
+# Check out names
+newnames
+
+# Assign new names to samples
+colnames(otutab) = newnames
+
+# Same thing if we wanted to simplify OTU names to IDs
+# Instead of sequences (although that's useful)
+otunames=row.names(otutab)
+length(otunames)
+newotunames = paste("OTU",rep(1:length(otunames)),sep="")
+head(newotunames)
+row.names(otutab) = newotunames
+head(otutab)
+
+# Cut off the sampling ID to match metadata
+for (i in 1:length(colnames(otutab))){
+  newname = strsplit(colnames(otutab[i]),"_")[[i]][1]
+  colnames(otutab)[i]=newname
+}
+
+# Import sample data
+samdat = read.csv("Hatch-Metadata.csv")
+samdat$Sample.ID = as.character(samdat$Sample.ID)
+samdat$Sample.ID[1:9] = paste("00",samdat$Sample.ID[1:9],sep="")
+samdat$Sample.ID[10:length(samdat$Sample.ID)] = paste("0",samdat$Sample.ID[10:length(samdat$Sample.ID)],sep="")
+
+# Check we have all the same sample names now
+samdat$Sample.ID == colnames(otutab)[1:65]
+samdat = sample_data(samdat)
+
+row.names(samdat) = samdat$Sample.ID
+
+# Create phyloseq object
+ps = phyloseq(otu_table=otutab,sample_data=samdat)
+
+ps.melt = psmelt(ps)
+ps.melt
+
+head(ps.melt)
+
+hist(sample_sums(ps))
+
+# Relative abundances
+ps.norm = transform_sample_counts(ps,function(x) x/sum(x))
+head(otu_table(ps.norm))
+sample_sums(ps.norm)
+# Looks good
+
+ps.norm.noC = prune_samples(sample_names(ps.norm) != "049-W3-Compost",ps.norm)
+ps.norm.noC = prune_samples(sample_names(ps.norm.nocompost) != "004-K2-Muck",ps.norm.nocompost)
+ps.norm.noC
+
+colnames(sample_data(ps.norm))
+
+ps.ord.nmds = ordinate(ps.norm.noC, "NMDS", "bray",trymax=1000,k=2)
+p = plot_ordination(ps.norm.noC, ps.ord.nmds, type="samples")
+palette = brewer.pal(8, "Spectral")
+p = p + aes(colour=Soil.pH) + geom_point(size=3) + scale_colour_gradientn(colors=palette)
+p
+
+row.names(samdat)
+ps.ord.pcoa = ordinate(ps, "PCoA", "bray")
+p = plot_ordination(ps, ps.ord.pcoa, type="samples",label="Names")
+p
+```

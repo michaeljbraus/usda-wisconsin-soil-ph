@@ -1,0 +1,39 @@
+2019-09-19
+
+Custom Bead-Beating and Extraction Protocol
+
+Source: Expired (2016) DNA extraction kits from MoBio called PowerSoil and PowerFecal. 
+
+Goal: Create soil DNA extractions for measurement of pH of solutions at early steps in lysating and "cleaning". 
+
+ALL TUBES
+
+1. Remove all pre-loaded buffer solution from any bead tubes with such a solution. These have partially and differently evaporated, so add water to bring the final volume to the expected volume, which will bring the buffer to the correct concentration. 
+
+2. Add 750 microL of bead-beating solution. 
+
+BATCHES OF 24
+
+3. Add weighed soil (0.25 g) to bead-beating tubes and briefly vortext. 
+
+4. Add 60 microL of C1 solution. 
+
+5. Bead-beating specs: 45 seconds at 6.0 m/sec. 
+
+6. Centrifuge tubes at 10,000 x g for 30 seconds. 
+
+7. Transfer 500-600 microL of the supernatant to clean tubes. 
+
+8. Draw off 100 microL of this solution and add it to the pH multiplate labeled "after C1 solution". 
+
+9. Add 250 microL of C2 solution and incubate at 4 C for 5 minutes. 
+
+10. Centrifuge tubes at 10,000 x g for 1 minute. 
+
+11. Transfer 600-700 microL of the supernatant to clean tubes. 
+
+12. Draw off 100 microL of this solution and add it to the pH multiplate labeled "after C2 solution". 
+
+13. Freeze these tubes alongside the two pH multiplates. 
+
+14. Meaure pH of the multiplates. 

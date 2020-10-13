@@ -1,0 +1,9 @@
+base
+phyloseq
+Rcpp
+dada2
+ggplot2
+RColorBrewer
+permute
+lattice
+vegan

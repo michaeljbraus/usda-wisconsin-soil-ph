@@ -1,0 +1,16 @@
+core.number = Sequentially assigned core identification number. 
+collection.date = Date of collection of the core (eg. "2017-10-31")
+collection.site = Site of collection of the core (eg. "Spooner")
+wss.soil.series = Soil series as determined by the Web Soil Survey (eg. "Griswold")
+plot.description = A description of the plot sampled from (eg. "pH4.7")
+vegetation = Description of the vegetation or recent vegetation of the plot (eg. "Soy")
+liming.date = If limed, the last date of lime addition (eg. "2017-10-20")
+target.pH = If managed, which pH is the target of the field
+standard.pH = The standard soil pH of the site as determined by composite sampling
+depth = Lower depth of the sample taken from the core
+micro.pH = Soil pH of a very small sample but still 1:1 soil:water
+horizon = Designated horizon in the soil profile (eg. "Ap")
+mean.micro.pH.horizon = The mean pH of the micro.pH values in a horizon
+horizon.standard.pH = The standard pH of a sample from a whole horizon
+error.standard.micro = The difference between micro.pH and horizon.standard.pH
+mean.error.standard.micro.horizon = The mean of the between micro.pH and horizon.standard.pH in a horizon

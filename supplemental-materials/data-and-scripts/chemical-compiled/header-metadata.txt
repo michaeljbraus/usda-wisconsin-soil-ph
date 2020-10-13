@@ -1,0 +1,140 @@
+# BRAUS & WHITMAN 2020 METADATA
+
+# "SFAL" means data was collected/provided by UW Soil and Forage LAB. 
+# "Braus" means data was collected/provided by Michael J. Braus. 
+# "WSS" means data was collected/provided by Web Soil Survey. 
+
+Water.Soil.Ratio
+== Braus: The ratio (not fraction) of water to fresh undried soil by mass. Read '1-to-1' as '1 part water to 1 part soil by mass'. 
+
+Sample.ID
+== Braus: The sample identification code tracks all samples and reports [sample number - site letter with pit number - upper depth (cm) - lower depth (dm)]. 
+
+Study
+== Braus: Two studies were performed in this project to cover a large natural soil pH gradient (Wisconsin) and small experimental soil pH gradient (Spooner). 
+
+Sample.Number
+== Braus: Unique identifying number for each sample. 
+
+DNA.Extr.pH.After.C1
+== Braus: The pH value was taken from the lysate supernatant of the soil DNA extraction protocol after the "C1" solution. 
+
+DNA.Extr.pH.After.C2
+== Braus: The pH value was taken from the lysate supernatant of the soil DNA extraction protocol after the "C2" solution. 
+
+Lab.CO2.pH
+== Braus: The pH value was taken at approximately 400 ppm carbon dioxide in the laboratory. 
+
+High.CO2.pH
+== Braus: The pH value was taken at approximately 2 percent carbon dioxide in a chamber designed to elevate the partial pressure of this gas. 
+
+Tube.Empty.g
+== Braus: The mass of each tube completely empty. 
+
+Moist.Soil.g
+== Braus: The mass of fresh soil added to the empty tube (does not include the empty tube's mass because it was tared before weighing the fresh soil aliquot). 
+
+Water.Added.mL
+== Braus: The mass of 0.01 M KCl added to each aliquot of soil. 
+
+Tube.Dry.Soil.g
+== Braus: The mass of soil and tube after drying at 90 C for several days. 
+
+Dry.Soil.g
+== Braus: The mass of soil minus the mass of tube after drying at 90 C for several days. 
+
+Water.Cont.mass
+== Braus: The original soil water content by mass of the fresh soil before adding analyte solution. 
+
+Target.Water.Soil.Content
+== Braus: The target water content by mass, or mass of water divided by mass of undried (fresh) soil. 
+
+Real.Water.Soil.ratio
+== Braus: The real water content by mass, or mass of water divided by mass of dried soil. 
+
+Error.Water.Soil.ratio
+== Braus: This is the difference between the target and real water content, a necessary result of using fresh soil instead of dried soil. 
+
+Perc.Sand
+== SFAL: The percent sand content as measured by hydrometer method. 
+
+Perc.Silt
+== SFAL: The percent silt content as measured by hydrometer method. 
+
+Perc.Clay
+== SFAL: The percent clay content as calculated by hydrometer method using percent sand and silt. 
+
+Texture.Name
+== SFAL: The textural category using percent sand, silt, and clay. 
+
+OM.perc
+== SFAL: Percent soil organic matter by mass using loss on ignition. 
+
+Scoop.Density.g.4.24.cc
+== SFAL: The mass per "scoop", a standard volume used throughout the SFAL protocols. 
+
+Soil.pH
+== SFAL: The standard soil pH protocol using 1:1 soil:water ratio, settled, and measured with a glass pH probe. 
+
+Sikora.pH
+== SFAL: The pH resulting from suspension of soil in the "Sikora pH buffer". See Sikora, FJ. 2006. “A Buffer That Mimics the Smp Buffer for Determining Lime Requirement of Soil.” Soil Science Society of America Journal 70 (2). Soil Science Society: 474–86. 
+
+Total.N.perc
+== SFAL: Percent nitrogen determined by dry combustion. 
+
+Total.Org.C.perc
+== SFAL: Percent organic carbon determined by dry combustion. 
+
+Bray.1.P.ppm
+== SFAL: Phosphorous extracted using Bray No. 1 solution protocol. 
+
+K.ppm
+== SFAL: Potassium extracted using Bray No. 1 solution protocol. 
+
+K.perc.CEC
+== SFAL: Potassium extracted using Bray No. 1 solution protocol as a percentage of cation exchange capacity. 
+
+Ca.ppm
+== SFAL: Ammonium acetate-extracted calcium content. 
+
+Ca.perc.CEC
+== SFAL: Ammonium acetate-extracted calcium content as a percentage of cation exchange capacity. 
+
+Mg.ppm
+== SFAL: Ammonium acetate-extracted magnesium content. 
+
+Mg.perc.CEC
+== SFAL: Ammonium acetate-extracted magnesium content as a percentage of cation exchange capacity.
+
+Na.ppm
+== SFAL: Sodium content determined by 1:1 soil:water ratio and conductivity probe and meter. 
+
+Na.perc.CEC
+== SFAL: Sodium content determined by 1:1 soil:water ratio and conductivity probe and meter as a percentage of cation exchange capacity. 
+
+Est.Ac.Hplus
+== SFAL: Exchangeable acidity per 100 g in cmol per kg. 
+
+Hplus.perc.CEC
+== SFAL: Exchangeable acidity per 100 g in cmol per kg as a fraction of cation exchange capacity. 
+
+CEC.sum
+== SFAL: Cation exchange capacity per 100 g in cmol per kg. 
+
+Date.of.Collection
+== Braus: The date a pit was dug, samples gathered, and samples placed in fridge. 
+
+Station.Name
+== Braus: Name of agricultural research station. 
+
+St.pH.WSS
+== WSS: The standard soil pH gathered from Web Soil Survey database. 
+
+Site.Number
+== Braus: The site (or pit) number within each research station. 
+
+Upper.Depth.cm
+== Braus: Upper depth of horizon sampled. 
+
+Lower.Depth.cm
+== Braus: Lower depth of horizon sampled. 

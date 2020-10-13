@@ -1,0 +1,117 @@
+---
+title: "Hatch SFAL Results"
+author: "Michael J. Braus"
+date: "`r Sys.Date()`"
+output:
+  pdf_document:
+    toc: no
+    toc_depth: 2
+    number_sections: false
+---
+
+\fontsize{12}{12}
+\selectfont
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(fig.path = 'report-output/', echo = TRUE, warning = FALSE, message = FALSE, cache = FALSE)
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(dev="png", dpi=300)
+```
+
+```{r packages}
+library(ggplot2)
+```
+
+These are the standard soil pH values we have to work with, now. 
+
+```{r full-histogram, fig.width=5, fig.height=3}
+soil.dat <- read.csv(file = "2018-10-05-soil-analysis-report-5118-5119/5118-5119-braus-whitman-cec-base-saturation.csv", 
+  header = TRUE)
+ggplot(soil.dat, aes(Soil.pH, fill = Station.Name)) +
+  geom_histogram(binwidth=0.5) + theme_bw() + labs(x = "Standard Soil pH (1:1)")
+```
+
+```{r analysis-depth, fig.height=4, fig.width=6}
+soil.dat$Station.Name <- as.factor(soil.dat$Station.Name)
+p <- ggplot(soil.dat, aes(Soil.pH, -(Upper.Depth.cm+Lower.Depth.cm)/2, shape=Station.Name))
+p + geom_point(size = 5) + theme_bw() + labs(x = "Standard Soil pH (1:1)", y = "Depth (cm)") +
+             scale_shape_manual(values=1:nlevels(soil.dat$Station.Name)) + labs(shape='Station Name') 
+```
+
+```{r organic-matter, fig.height=4, fig.width=6}
+p <- ggplot(soil.dat, aes(Soil.pH, OM.perc, color=Station.Name))
+p + geom_point(size = 3) + theme_bw()
+```
+
+```{r organic-matter-histogram, fig.height=4, fig.width=6}
+ggplot(soil.dat, aes(OM.perc, fill = Station.Name)) +
+  geom_histogram(binwidth=0.5) + theme_bw()
+```
+
+```{r analysis-depth-histogram, fig.height=4, fig.width=6}
+ggplot(soil.dat, aes(-(Upper.Depth.cm+Lower.Depth.cm)/2, fill = Station.Name)) +
+  geom_histogram(binwidth=0.5) + theme_bw()
+```
+
+```{r sikora, fig.height=4, fig.width=6}
+p <- ggplot(soil.dat, aes(Soil.pH, Sikora.pH, color=Station.Name))
+p + geom_point(size = 3) + theme_bw()
+```
+
+```{r TotalOrgCperc, fig.height=4, fig.width=6}
+p <- ggplot(soil.dat, aes(Soil.pH, Total.Org.C.perc, color=Station.Name))
+p + geom_point(size = 3) + theme_bw()
+```
+
+```{r ScoopDensity, fig.height=4, fig.width=6}
+p <- ggplot(soil.dat, aes(Soil.pH, Scoop.Density.g.4.24.cc, color=Station.Name))
+p + geom_point(size = 3) + theme_bw()
+```
+
+```{r TotalNperc, fig.height=4, fig.width=6}
+# str(soil.dat)
+p <- ggplot(soil.dat, aes(Soil.pH, Total.N.perc, color=Station.Name))
+p + geom_point(size = 3) + theme_bw()
+```
+
+```{r P-ppm, fig.height=4, fig.width=6}
+# str(soil.dat)
+p <- ggplot(soil.dat, aes(Soil.pH, Bray.1.P.ppm, color=Station.Name))
+p + geom_point(size = 3) + theme_bw()
+```
+
+```{r AmmAcet-Ca-ppm, fig.height=4, fig.width=6}
+p <- ggplot(soil.dat, aes(Soil.pH, AmmAcet.Ca.ppm, color=Station.Name))
+p + geom_point(size = 3) + theme_bw()
+```
+
+```{r Ca-perc-CEC, fig.height=4, fig.width=6}
+p <- ggplot(soil.dat, aes(Soil.pH, Ca.perc.CEC, color=Station.Name))
+p + geom_point(size = 3) + theme_bw()
+```
+
+```{r Mg-ppm, fig.height=4, fig.width=6}
+p <- ggplot(soil.dat, aes(Soil.pH, Mg.ppm, color=Station.Name))
+p + geom_point(size = 3) + theme_bw()
+```
+
+```{r Est-Acidity-Hplus-meq-100g, fig.height=4, fig.width=6}
+p <- ggplot(soil.dat, aes(Soil.pH, Est.Acidity.Hplus.meq.100g, color=Station.Name))
+p + geom_point(size = 3) + theme_bw()
+```
+
+```{r Hplus-perc-cec, fig.height=4, fig.width=6}
+p <- ggplot(soil.dat, aes(Soil.pH, Hplus.perc.CEC, color=Station.Name))
+p + geom_point(size = 3) + theme_bw()
+```
+
+```{r CEC-summ-meq-100g, fig.height=4, fig.width=6}
+p <- ggplot(soil.dat, aes(Soil.pH, CEC.summation.meq.100g, color=Station.Name))
+p + geom_point(size = 3) + theme_bw()
+```
+
+*See Rmd for R code.*
+

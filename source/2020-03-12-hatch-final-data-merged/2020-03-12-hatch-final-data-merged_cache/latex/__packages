@@ -1,0 +1,9 @@
+base
+ggplot2
+leaps
+phyloseq
+RColorBrewer
+permute
+lattice
+vegan
+cowplot

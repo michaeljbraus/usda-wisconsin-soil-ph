@@ -1,0 +1,36 @@
+---
+title: "2019-08-22-hatch-ph-standards"
+author: "Michael J. Braus"
+date: "`r Sys.Date()`"
+output:
+  pdf_document:
+    toc: yes
+    toc_depth: 2
+    number_sections: true
+---
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(fig.path = 'output/', echo = FALSE, warning = FALSE, message = FALSE, cache = TRUE, fig.width = 5, fig.height = 4)
+```
+
+```{r}
+library(ggplot2)
+dat <- read.csv("2019-08-22-hatch-ph-standards-0.1MCaCl2-compiled.csv", header=T)
+str(dat)
+```
+
+```{r}
+p <- ggplot(dat, aes(x = time, y = pH, color = sample))
+p + geom_point() + facet_wrap(~date, scales="free_x") + theme_bw()
+```
+
+```{r}
+dat.standard <- subset(dat, sample=="standard")
+p <- ggplot(dat.standard, aes(x = time, y = pH, color = CO2.atmo))
+p + geom_point() + facet_wrap(~date, scales="free_x") + theme_bw()
+```
+
+```{r}
+p <- ggplot(dat.standard, aes(x = time, y = 10^-pH, color = CO2.atmo))
+p + geom_point() + facet_wrap(~date, scales="free_x") + theme_bw()
+```

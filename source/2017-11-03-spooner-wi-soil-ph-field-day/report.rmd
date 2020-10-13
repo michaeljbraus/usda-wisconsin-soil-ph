@@ -1,0 +1,82 @@
+---
+title: "Spooner Soil pH 2017"
+author: "Michael J. Braus"
+date: "`r Sys.Date()`"
+output:
+  pdf_document:
+    toc: no
+    toc_depth: 2
+    number_sections: false
+---
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(fig.width = 5, fig.height = 3, fig.path = 'Output/', warning = FALSE, message = FALSE, cache = TRUE)
+```
+
+### Introduction
+
+
+
+### Methods
+
+#### Study Site Description
+
+[ Soil description, esp. bulk density for grav-to-vol water content calculations. ]
+
+[Liming, soy, etc.]
+
+[Data from Phil.]
+
+#### Sample Collection
+
+Several hundred Whirlpak bags were labeled with random unique numbers and filled with soil, transported from Spooner to Madison, and stored at -20C. Sample metadata for each bag number was written on a data sheet and digitized to the file "Field-Day-2017-11-03-DATA.xlsx". 
+
+163 total samples were collected. [Description of randomization and treatments and levels on the plots and cores...]
+
+||| MAP OF CORES TAKEN TO DISPLAY RANDOMIZATION ||| 
+
+Samples of depths >20 cm and samples exhibiting contamination with upper horizons when the core was being removed from the soil were exluded. These include samples (bag number) 70, 195, 197, 194, 65, 148, 98, 123, 137, 94, 66, 86, 67, 37, 27, 89. All excluded samples were from the North plots. Samples from the South plots all exceeded 16 cm in depth but no soil was collected from depths >20 cm. 
+
+Additionally, two 5-gallon buckets of (1) Ap from 0-30 cm depth and (2) Bw from 30-70 cm depth was collected. A photo of the profile from which these buckets of soil were collected. 
+
+||| Photo of profile called Report-Input/Profile.JPG |||
+
+#### Sample Splitting & Processing
+
+Samples were split into soil for (1) DNA extraction and (2) pH analyses at various soil water contents and CO2 levels. 
+
+Soil for DNA extraction (# g) was immediately removed from thawed soil and refrozen. 
+
+Soil for pH measurements was dried in their bags open at 40C for 24 hours, then shaken through a 2000 micron seive. A small sample of soil was put aside at each stage, weighed, and dried at 40C for a week and weighed again to estimate gravimetric soil water content throughout processing. Roughly 1.0 mL of soil was then aliquotted into 1.5 mL plastic tubes and weighed to determine how much water to add. For the 1:0.1
+
+For the 1:1 micro-pH tubes, an equal mass of water was added to each tube of soil using a micropipet. 
+
+For the 1:0.1 micro-pH tubes, a mass of water 1/10 the mass of soil was added to a 15 mL tube. 
+
+#### DNA Extraction & 16S PCR
+
+Sample bags were thawed and mixed for 10 seconds with a clean spatula, and 0.25 g soil weighed into 1.5 mL tubes labeled corresponding to bag numbers. These were frozen at -20C, then later pooled & re-weighed so that each core was represented. This entailed pooling by core (0-20 cm depths) and re-weighing 0.25 g of soil from the samples from the North plot. DNA was extracted with the Poweorsoil DNA Isolation Kit and eluted DNA frozen at -20C. 
+
+16S polymerase chain reaction (PCR) was performed to amplify rDNA of the 16S gene in the microbiota (or artefactual DNA) present in the sample and to barcode the samples for demultiplexing post-sequencing. [DETAILS OF PCR AND BARCODES...]
+
+[SEQUENCING & SEQUENCER DETAILS...]
+
+### Results
+
+#### Soil pH
+
+||| Histograms of soil pH, by depths for North plot |||
+
+#### Soil Microbial Communities
+
+||| Phylum and family-level characterizations of soil microbial communities of each treatment level. |||
+
+#### Ecological Factor Analysis
+
+[INFO ABOUT READS THAT CAME OFF THE SEQUNCER...]
+
+||| permANOVA with interaction for all treatment levels, alpha diversity, and ordination plots. |||
+
+Major comparison: 
+
+### Conclusions
+

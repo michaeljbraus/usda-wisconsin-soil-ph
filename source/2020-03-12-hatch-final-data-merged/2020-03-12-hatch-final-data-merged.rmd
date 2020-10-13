@@ -1,0 +1,1110 @@
+---
+title: "2020-03-12-hatch-final-data-merged"
+author: "Michael J. Braus"
+date: "`r Sys.Date()`"
+output:
+  pdf_document:
+    toc: yes
+    toc_depth: 2
+    number_sections: false
+---
+
+\fontsize{12}{14}
+\selectfont{}
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(fig.path = 'output-rmd/', echo = TRUE, warning = FALSE, message = FALSE, cache = FALSE)
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(dev="png", dpi=300)
+```
+
+# METROLOGY PAPER
+
+Let's load some packages and the data set. 
+
+```{r prep-metrology}
+library(ggplot2)
+library(leaps)
+library(cowplot)
+dat <- read.csv(file = "source/metrology-compiled/2020-03-12-hatch-data-merged.csv", header = T)
+str(dat)
+```
+
+Let's process the data a little by making exponentiated pH values, making diffs, etc. 
+
+```{r process-dat }
+dat$Study <- as.character(dat$Study)
+dat$Mean.Depth <- (dat$Upper.Depth.cm+dat$Lower.Depth.cm)/2
+```
+
+```{r jackson-plot-ph, fig.height=8, fig.width=6}
+ggplot(subset(dat, Study!=""&Real.Water.Soil.ratio<=1.3), aes(Real.Water.Soil.ratio, Lab.CO2.pH, color=Sample.ID, shape=Horizon)) + 
+  geom_point(size=1) + geom_line(size=0.3) + theme_bw() + theme(legend.position="none") +
+  facet_wrap(~Study, ncol=1) + labs(x="Water/Soil by Mass", y="Soil pH") + 
+  scale_y_continuous(breaks = seq(4, 8, by = 0.25))
+```
+
+```{r jackson-plot-ph-wisc, fig.height=8, fig.width=8}
+jack.wisc <- ggplot(subset(dat, Study!=""&Study!="Spooner"&Real.Water.Soil.ratio<=1.3), aes(Real.Water.Soil.ratio, Lab.CO2.pH, color=Sample.ID, shape=Horizon)) + 
+  geom_point(size=3) + geom_point(colour = "grey90", size = 1.5) + geom_line(size=0.3) + theme_bw() + theme(legend.position="none") +
+  facet_wrap(~Station.Name, ncol=3) + labs(x="Water/Soil by Mass", y="Soil pH") + 
+  scale_y_continuous(breaks = seq(4, 8, by = 0.25))+
+  scale_x_continuous(breaks = seq(0, 1.25, by = 0.2))
+jack.wisc
+```
+
+```{r jackson-plot-ph-spooner, fig.height=5, fig.width=6}
+jack.spoon <- ggplot(subset(dat, Study!=""&Study!="Wisconsin"&Real.Water.Soil.ratio<=1.3), aes(Real.Water.Soil.ratio, Lab.CO2.pH, color=Sample.ID, shape=Horizon)) + 
+  geom_point(size=3) + geom_point(colour = "grey90", size = 1.5) + geom_line(size=0.3) + theme_bw() + theme(legend.position="none") +
+  facet_wrap(~Station.Name, ncol=3) + labs(x="Water/Soil by Mass", y="Soil pH") + 
+  scale_y_continuous(breaks = seq(4, 8, by = 0.25))+
+  scale_x_continuous(breaks = seq(0, 1.25, by = 0.2))
+jack.spoon
+```
+
+```{r jackson-plot-activity-wisc, fig.height=8, fig.width=8}
+ggplot(subset(dat, Study!=""&Study!="Spooner"&Real.Water.Soil.ratio<=1.3), aes(Real.Water.Soil.ratio, 10^-Lab.CO2.pH, color=Sample.ID, shape=Horizon)) + 
+  geom_point(size=2) + geom_line(size=0.3) + theme_bw() + theme(legend.position="none") +
+  facet_wrap(~Station.Name, ncol=3) + labs(x="Water/Soil by Mass", y="Soil a(H+)")
+```
+
+```{r jackson-plot-activity-spooner, fig.height=5, fig.width=6}
+ggplot(subset(dat, Study!=""&Study!="Wisconsin"&Real.Water.Soil.ratio<=1.3), aes(Real.Water.Soil.ratio, 10^-Lab.CO2.pH, color=Sample.ID, shape=Horizon)) + 
+  geom_point(size=2) + geom_line(size=0.3) + theme_bw() + theme(legend.position="none") +
+  facet_wrap(~Station.Name, ncol=3) + labs(x="Water/Soil by Mass", y="Soil a(H+)")
+```
+
+```{r jackson-plot-wiscons-spooner, fig.width=12, fig.height=6}
+plot_grid(jack.spoon, jack.wisc)
+```
+
+## Wisconsin Soil pH ~ Nutrient Profiles
+
+This is the BIC for the Wisconsin soils, using the available "metadata", which means soil chemical data. 
+
+```{r subset-wisconsin }
+dat.wisc <- subset(dat, Study=="Wisconsin")
+```
+
+### one2one
+
+```{r subset-wisc.one2one }
+dat.wisc.1.to.1 <- subset(dat.wisc, Water.Soil.Ratio=="1-to-1")
+str(dat.wisc.1.to.1)
+```
+
+```{r bic.wisc.one2one.labco2 }
+bic.wisc.one2one.labco2 <- regsubsets(Lab.CO2.pH ~ Perc.Sand + Perc.Silt + Perc.Clay + OM.perc + Total.N.perc + Total.Org.C.perc + Bray.1.P.ppm + K.ppm + Ca.ppm + Mg.ppm + Est.Ac.Hplus + CEC.sum + Mean.Depth, nbest = 2, data = dat.wisc.1.to.1)
+plot(bic.wisc.one2one.labco2, scale='bic', main="Wisconsin Soils, 1-to-1 Water-to-Soil, ~400 ppm CO2")
+```
+
+```{r bic.wisc.one2one.highco2 }
+bic.wisc.one2one.highco2 <- regsubsets(High.CO2.pH ~ Perc.Sand + Perc.Silt + Perc.Clay + OM.perc + Total.N.perc + Total.Org.C.perc + Bray.1.P.ppm + K.ppm + Ca.ppm + Mg.ppm + Est.Ac.Hplus + CEC.sum + Mean.Depth, nbest = 2,data = dat.wisc.1.to.1)
+plot(bic.wisc.one2one.highco2, scale='bic', main="Wisconsin Soils, 1-to-1 Water-to-Soil, ~2% CO2")
+```
+
+### one2two
+
+```{r subset-wisc.one2two}
+dat.wisc.1.to.2 <- subset(dat.wisc, Water.Soil.Ratio=="1-to-2")
+str(dat.wisc.1.to.2)
+```
+
+```{r bic.wisc.one2two.labco2}
+bic.wisc.one2two.labco2 <- regsubsets(Lab.CO2.pH ~ Perc.Sand + Perc.Silt + Perc.Clay + OM.perc + Total.N.perc + Total.Org.C.perc + Bray.1.P.ppm + K.ppm + Ca.ppm + Mg.ppm + Est.Ac.Hplus + CEC.sum + Mean.Depth, nbest = 2,data = dat.wisc.1.to.2)
+plot(bic.wisc.one2two.labco2, scale='bic', main="Wisconsin Soils, 1-to-2 Water-to-Soil, ~400 ppm CO2")
+```
+
+```{r bic.wisc.one2two.highco2}
+bic.wisc.one2two.highco2 <- regsubsets(High.CO2.pH ~ Perc.Sand + Perc.Silt + Perc.Clay + OM.perc + Total.N.perc + Total.Org.C.perc + Bray.1.P.ppm + K.ppm + Ca.ppm + Mg.ppm + Est.Ac.Hplus + CEC.sum + Mean.Depth, nbest = 2, data = dat.wisc.1.to.2)
+plot(bic.wisc.one2two.highco2, scale='bic', main="Wisconsin Soils, 1-to-2 Water-to-Soil, ~2% CO2")
+```
+
+### one2three
+
+```{r subset-wisc.one2three}
+dat.wisc.1.to.3 <- subset(dat.wisc, Water.Soil.Ratio=="1-to-3")
+str(dat.wisc.1.to.3)
+```
+
+```{r bic.wisc.one2three.labco2}
+bic.wisc.one2three.labco2 <- regsubsets(Lab.CO2.pH ~ Perc.Sand + Perc.Silt + Perc.Clay + OM.perc + Total.N.perc + Total.Org.C.perc + Bray.1.P.ppm + K.ppm + Ca.ppm + Mg.ppm + Est.Ac.Hplus + CEC.sum + Mean.Depth, nbest = 2,data = dat.wisc.1.to.3)
+plot(bic.wisc.one2three.labco2, scale='bic', main="Wisconsin Soils, 1-to-3 Water-to-Soil, ~400 ppm CO2")
+```
+
+```{r bic.wisc.one2three.highco2}
+bic.wisc.one2three.labco2 <- regsubsets(High.CO2.pH ~ Perc.Sand + Perc.Silt + Perc.Clay + OM.perc + Total.N.perc + Total.Org.C.perc + Bray.1.P.ppm + K.ppm + Ca.ppm + Mg.ppm + Est.Ac.Hplus + CEC.sum + Mean.Depth, nbest = 2,data = dat.wisc.1.to.3)
+plot(bic.wisc.one2three.labco2, scale='bic', main="Wisconsin Soils, 1-to-3 Water-to-Soil, ~2% CO2")
+```
+
+### one2four
+
+```{r subset-wisc.one2four}
+dat.wisc.1.to.4 <- subset(dat.wisc, Water.Soil.Ratio=="1-to-4")
+str(dat.wisc.1.to.4)
+```
+
+```{r bic.wisc.one2four.labco2}
+bic.wisc.one2four.labco2 <- regsubsets(Lab.CO2.pH ~ Perc.Sand + Perc.Silt + Perc.Clay + OM.perc + Total.N.perc + Total.Org.C.perc + Bray.1.P.ppm + K.ppm + Ca.ppm + Mg.ppm + Est.Ac.Hplus + CEC.sum + Mean.Depth, nbest = 2,data = dat.wisc.1.to.4)
+plot(bic.wisc.one2four.labco2, scale='bic', main="Wisconsin Soils, 1-to-4 Water-to-Soil, ~400 ppm CO2")
+```
+
+```{r bic.wisc.one2four.highco2}
+bic.wisc.one2four.highco2 <- regsubsets(High.CO2.pH ~ Perc.Sand + Perc.Silt + Perc.Clay + OM.perc + Total.N.perc + Total.Org.C.perc + Bray.1.P.ppm + K.ppm + Ca.ppm + Mg.ppm + Est.Ac.Hplus + CEC.sum + Mean.Depth, nbest = 2,data = dat.wisc.1.to.4)
+plot(bic.wisc.one2four.highco2, scale='bic', main="Wisconsin Soils, 1-to-4 Water-to-Soil, ~2% CO2")
+```
+
+## Soil pH Values
+
+### Wisconsin 
+
+```{r wisc-stand-sim-soil-ph}
+q1 <- qplot(data = dat.wisc, x = Lab.CO2.pH, y = High.CO2.pH, color = Water.Soil.Ratio, shape = Water.Soil.Ratio) + geom_point(size=2) +
+  theme_bw() + geom_smooth(method = "glm") + 
+  geom_abline(slope = 1, intercept = 0, color = "black") + 
+  labs(color='Solution-to-Soil \n Ratio by Mass', 
+       x = "pH of Extract at 0.04% carbon dioxide", 
+       y = "pH of Extract at 2.2% carbon dioxide")  + 
+  ggtitle("Cross-Wisconsin Soil pH Gradient")
+q1
+```
+
+```{r wisc-stand-sim-soil-ph-rsq}
+dat.wisc.one2one <- subset(dat.wisc, Water.Soil.Ratio=="1-to-1")
+lm.dat.wisc.one2one <- lm(dat.wisc.one2one$High.CO2.pH ~ dat.wisc.one2one$Lab.CO2.pH)
+summary(lm.dat.wisc.one2one)
+dat.wisc.one2two <- subset(dat.wisc, Water.Soil.Ratio=="1-to-2")
+lm.dat.wisc.one2two <- lm(dat.wisc.one2two$High.CO2.pH ~ dat.wisc.one2two$Lab.CO2.pH)
+summary(lm.dat.wisc.one2two)
+dat.wisc.one2three <- subset(dat.wisc, Water.Soil.Ratio=="1-to-3")
+lm.dat.wisc.one2three <- lm(dat.wisc.one2three$High.CO2.pH ~ dat.wisc.one2three$Lab.CO2.pH)
+summary(lm.dat.wisc.one2three)
+dat.wisc.one2four <- subset(dat.wisc, Water.Soil.Ratio=="1-to-4")
+lm.dat.wisc.one2four <- lm(dat.wisc.one2four$High.CO2.pH ~ dat.wisc.one2four$Lab.CO2.pH)
+summary(lm.dat.wisc.one2four)
+```
+
+```{r wisc-stand-sim-soil-hplus}
+q2 <- qplot(data = dat.wisc, x = 10^-Lab.CO2.pH, y = 10^-High.CO2.pH, color = Water.Soil.Ratio, shape = Water.Soil.Ratio) + geom_point(size=2) + scale_x_continuous(limits = c(10^-8.1, 10^-4.8)) + scale_y_continuous(limits = c(10^-8.1, 10^-4.8)) + theme_bw() + geom_smooth(method = "glm") + geom_abline(slope = 1, intercept = 0, color = "black")+
+  labs(color='Solution-to-Soil \n Ratio by Mass', 
+       x = "a(H+)[M] of Extract at 0.04% carbon dioxide", 
+       y = "a(H+)[M] of Extract at 2.2% carbon dioxide") + 
+  ggtitle("Cross-Wisconsin Soil pH Gradient")
+q2
+```
+
+```{r wisc-stand-sim-soil-hplus-rsq}
+dat.wisc$Lab.CO2.pH.exp <- 10^-dat.wisc$Lab.CO2.pH
+dat.wisc$High.CO2.pH.exp <- 10^-dat.wisc$High.CO2.pH
+dat.wisc.exp.one2one <- subset(dat.wisc, Water.Soil.Ratio=="1-to-1")
+lm.exp.dat.wisc.exp.one2one <- lm(dat.wisc.exp.one2one$High.CO2.pH.exp ~ dat.wisc.exp.one2one$Lab.CO2.pH.exp)
+summary(lm.exp.dat.wisc.exp.one2one)
+dat.wisc.exp.one2two <- subset(dat.wisc, Water.Soil.Ratio=="1-to-2")
+lm.exp.dat.wisc.exp.one2two <- lm(dat.wisc.exp.one2two$High.CO2.pH.exp ~ dat.wisc.exp.one2two$Lab.CO2.pH.exp)
+summary(lm.exp.dat.wisc.exp.one2two)
+dat.wisc.exp.one2three <- subset(dat.wisc, Water.Soil.Ratio=="1-to-3")
+lm.exp.dat.wisc.exp.one2three <- lm(dat.wisc.exp.one2three$High.CO2.pH.exp ~ dat.wisc.exp.one2three$Lab.CO2.pH.exp)
+summary(lm.exp.dat.wisc.exp.one2three)
+dat.wisc.exp.one2four <- subset(dat.wisc, Water.Soil.Ratio=="1-to-4")
+lm.exp.dat.wisc.exp.one2four <- lm(dat.wisc.exp.one2four$High.CO2.pH.exp ~ dat.wisc.exp.one2four$Lab.CO2.pH.exp)
+summary(lm.exp.dat.wisc.exp.one2four)
+```
+
+### Spooner
+
+```{r subset-spooner}
+dat.spooner <- subset(dat, Study=="Spooner")
+```
+
+```{r spooner-stand-sim-soil-ph}
+q3 <- qplot(data = dat.spooner, x = Lab.CO2.pH, y = High.CO2.pH, color = Water.Soil.Ratio, shape = Water.Soil.Ratio) + geom_point(size=2) +
+  theme_bw() + geom_smooth(method = "glm") + 
+  geom_abline(slope = 1, intercept = 0, color = "black") + 
+  labs(color='Solution-to-Soil \n Ratio by Mass', 
+       x = "pH of Extract at 0.04% carbon dioxide", 
+       y = "pH of Extract at 2.2% carbon dioxide")  + 
+  ggtitle("Long-term Soil pH Manipulation")
+q3
+```
+
+```{r spooner-stand-sim-soil-ph-rsq}
+dat.spooner.one2one <- subset(dat.spooner, Water.Soil.Ratio=="1-to-1")
+lm.dat.spooner.one2one <- lm(dat.spooner.one2one$High.CO2.pH ~ dat.spooner.one2one$Lab.CO2.pH)
+summary(lm.dat.spooner.one2one)
+dat.spooner.one2two <- subset(dat.spooner, Water.Soil.Ratio=="1-to-2")
+lm.dat.spooner.one2two <- lm(dat.spooner.one2two$High.CO2.pH ~ dat.spooner.one2two$Lab.CO2.pH)
+summary(lm.dat.spooner.one2two)
+dat.spooner.one2three <- subset(dat.spooner, Water.Soil.Ratio=="1-to-3")
+lm.dat.spooner.one2three <- lm(dat.spooner.one2three$High.CO2.pH ~ dat.spooner.one2three$Lab.CO2.pH)
+summary(lm.dat.spooner.one2three)
+dat.spooner.one2four <- subset(dat.spooner, Water.Soil.Ratio=="1-to-4")
+lm.dat.spooner.one2four <- lm(dat.spooner.one2four$High.CO2.pH ~ dat.spooner.one2four$Lab.CO2.pH)
+summary(lm.dat.spooner.one2four)
+```
+
+```{r spooner-stand-sim-soil-hplus}
+q4 <- qplot(data = dat.spooner, x = 10^-Lab.CO2.pH, y = 10^-High.CO2.pH, color = Water.Soil.Ratio, shape = Water.Soil.Ratio) + geom_point(size=2) + scale_x_continuous(limits = c(10^-8.1, 10^-4.8)) + scale_y_continuous(limits = c(10^-8.1, 10^-4.8)) + theme_bw() + geom_smooth(method = "glm") + geom_abline(slope = 1, intercept = 0, color = "black")+
+  labs(color='Solution-to-Soil \n Ratio by Mass', 
+       x = "a(H+)[M] of Extract at 0.04% carbon dioxide", 
+       y = "a(H+)[M] of Extract at 2.2% carbon dioxide") + 
+  ggtitle("Long-term Soil pH Manipulation")
+q4
+```
+
+```{r spooner-stand-sim-soil-hplus-rsq}
+dat.spooner$Lab.CO2.pH.exp <- 10^-dat.spooner$Lab.CO2.pH
+dat.spooner$High.CO2.pH.exp <- 10^-dat.spooner$High.CO2.pH
+dat.spooner.exp.one2one <- subset(dat.spooner, Water.Soil.Ratio=="1-to-1")
+lm.exp.dat.spooner.exp.one2one <- lm(dat.spooner.exp.one2one$High.CO2.pH.exp ~ dat.spooner.exp.one2one$Lab.CO2.pH.exp)
+summary(lm.exp.dat.spooner.exp.one2one)
+dat.spooner.exp.one2two <- subset(dat.spooner, Water.Soil.Ratio=="1-to-2")
+lm.exp.dat.spooner.exp.one2two <- lm(dat.spooner.exp.one2two$High.CO2.pH.exp ~ dat.spooner.exp.one2two$Lab.CO2.pH.exp)
+summary(lm.exp.dat.spooner.exp.one2two)
+dat.spooner.exp.one2three <- subset(dat.spooner, Water.Soil.Ratio=="1-to-3")
+lm.exp.dat.spooner.exp.one2three <- lm(dat.spooner.exp.one2three$High.CO2.pH.exp ~ dat.spooner.exp.one2three$Lab.CO2.pH.exp)
+summary(lm.exp.dat.spooner.exp.one2three)
+dat.spooner.exp.one2four <- subset(dat.spooner, Water.Soil.Ratio=="1-to-4")
+lm.exp.dat.spooner.exp.one2four <- lm(dat.spooner.exp.one2four$High.CO2.pH.exp ~ dat.spooner.exp.one2four$Lab.CO2.pH.exp)
+summary(lm.exp.dat.spooner.exp.one2four)
+```
+
+### Grid of Multifactorial Plots
+
+```{r multifactoral-grid-ph, fig.width=10, fig.height=7}
+plot_grid(q3, q4, q1, q2) 
+```
+
+
+*BLACK AND WHITE*
+
+```{r wisc-stand-sim-soil-ph-bw}
+q1.bw <- qplot(data = dat.wisc, x = Lab.CO2.pH, y = High.CO2.pH, shape = Water.Soil.Ratio) + geom_point(size=2) +
+  theme_bw() + geom_smooth(method = "glm") + 
+  geom_abline(slope = 1, intercept = 0, color = "black") + 
+  labs(color='Solution-to-Soil \n Ratio by Mass', 
+       x = "pH of Extract at 0.04% carbon dioxide", 
+       y = "pH of Extract at 2% carbon dioxide")  + 
+  ggtitle("Cross-Wisconsin Soil pH Gradient")
+q1.bw
+```
+
+```{r wisc-stand-sim-soil-hplus-bw}
+q2.bw <- qplot(data = dat.wisc, x = 10^-Lab.CO2.pH, y = 10^-High.CO2.pH, shape = Water.Soil.Ratio) + geom_point(size=2) + scale_x_continuous(limits = c(10^-8.1, 10^-4.8)) + scale_y_continuous(limits = c(10^-8.1, 10^-4.8)) + theme_bw() + geom_smooth(method = "glm") + geom_abline(slope = 1, intercept = 0, color = "black")+
+  labs(color='Solution-to-Soil \n Ratio by Mass', 
+       x = "a(H+)[M] of Extract at 0.04% carbon dioxide", 
+       y = "a(H+)[M] of Extract at 2% carbon dioxide") + 
+  ggtitle("Cross-Wisconsin Soil pH Gradient")
+q2.bw
+```
+
+### Spooner
+
+```{r spooner-stand-sim-soil-ph-bw}
+q3.bw <- qplot(data = dat.spooner, x = Lab.CO2.pH, y = High.CO2.pH, shape = Water.Soil.Ratio) + geom_point(size=2) +
+  theme_bw() + geom_smooth(method = "glm") + 
+  geom_abline(slope = 1, intercept = 0, color = "black") + 
+  labs(color='Solution-to-Soil \n Ratio by Mass', 
+       x = "pH of Extract at 0.04% carbon dioxide", 
+       y = "pH of Extract at 2% carbon dioxide")  + 
+  ggtitle("Long-term Soil pH Manipulation")
+q3.bw
+```
+
+```{r spooner-stand-sim-soil-hplus-bw}
+q4.bw <- qplot(data = dat.spooner, x = 10^-Lab.CO2.pH, y = 10^-High.CO2.pH, shape = Water.Soil.Ratio) + geom_point(size=2) + scale_x_continuous(limits = c(10^-8.1, 10^-4.8)) + scale_y_continuous(limits = c(10^-8.1, 10^-4.8)) + theme_bw() + geom_smooth(method = "glm") + geom_abline(slope = 1, intercept = 0, color = "black")+
+  labs(color='Solution-to-Soil \n Ratio by Mass', 
+       x = "a(H+)[M] of Extract at 0.04% carbon dioxide", 
+       y = "a(H+)[M] of Extract at 2% carbon dioxide") + 
+  ggtitle("Long-term Soil pH Manipulation")
+q4.bw
+```
+
+### Grid of Multifactorial Plots
+
+```{r multifactoral-grid-ph-bw, fig.width=10, fig.height=7}
+plot_grid(q1.bw, q2.bw, q3.bw, q4.bw) 
+```
+
+
+
+
+# MICROBIAL PAPER
+
+## Biom + Metadata
+
+Let's load all these packages. 
+
+```{r prep-microbial, results="hide" }
+# Intall:
+# BiocManager::install("phyloseq")
+# Load libraries
+library(phyloseq)
+#library(dada2)
+library(ggplot2)
+library(RColorBrewer)
+library(vegan)
+```
+
+Here we'll load in the microbial data. 
+
+```{r load-biom}
+# Import sequence processing table and check it out
+# How many sequences were retained at each step?
+track = readRDS("reads/track.rds")
+track
+# Import final otu table
+OTUs = readRDS("reads/OTUtab.nochim.rds")
+# Change rows and columns so taxa are rows
+OTUs = t(OTUs)
+# Import as phyloseq object table
+otutab = otu_table(OTUs, taxa_are_rows=TRUE)
+head(otutab)
+# Look at lowest-abundance samples
+head(sort(sample_sums(otutab)))
+name = row.names(otutab)[1]
+name
+hist(nchar(row.names(otutab)))
+colnames(otutab)
+# The sample names have suffixes appended to them - we just want sample IDs
+# Get names
+names = colnames(otutab)
+# Remove last 17 characters
+newnames = gsub('.{17}$', '', names)
+# Check out names
+newnames
+
+# Assign new names to samples
+colnames(otutab) = newnames
+
+# Same thing if we wanted to simplify OTU names to IDs
+# Instead of sequences (although that's useful)
+otunames=row.names(otutab)
+length(otunames)
+newotunames = paste("OTU",rep(1:length(otunames)),sep="")
+head(newotunames)
+row.names(otutab) = newotunames
+head(otutab)
+
+# Cut off the sampling ID to match metadata
+for (i in 1:length(colnames(otutab))){
+  newname = strsplit(colnames(otutab[i]),"_")[[i]][1]
+  colnames(otutab)[i]=newname
+}
+
+# Import sample data
+samdat = read.csv("source/metrology-compiled/2020-03-12-hatch-data-merged-as-metadata.csv", header=T)
+# samdat$Sample.ID = as.character(samdat$Sample.ID)
+# samdat$Sample.ID[1:9] = paste("00",samdat$Sample.ID[1:9],sep="")
+# samdat$Sample.ID[10:length(samdat$Sample.ID)] = paste("0",samdat$Sample.ID[10:length(samdat$Sample.ID)],sep="")
+
+# Check we have all the same sample names now
+samdat$Sample.ID[1:65] == colnames(otutab)[1:65]
+samdat$Sample.ID[66:125] == colnames(otutab)[66:125]
+samdat = sample_data(samdat)
+
+# Exponentiate all pH values
+samdat$DNA.Extr.Hplus.After.C1 <- 10^-samdat$DNA.Extr.pH.After.C1
+samdat$DNA.Extr.Hplus.After.C2 <- 10^-samdat$DNA.Extr.pH.After.C2
+samdat$Lab.CO2.Hplus.one2one <- 10^-samdat$Lab.CO2.pH.one2one
+samdat$Lab.CO2.Hplus.one2two <- 10^-samdat$Lab.CO2.pH.one2two
+samdat$Lab.CO2.Hplus.one2three <- 10^-samdat$Lab.CO2.pH.one2three
+samdat$Lab.CO2.Hplus.one2four <- 10^-samdat$Lab.CO2.pH.one2four
+samdat$High.CO2.Hplus.one2one <- 10^-samdat$High.CO2.pH.one2one
+samdat$High.CO2.Hplus.one2two <- 10^-samdat$High.CO2.pH.one2two
+samdat$High.CO2.Hplus.one2three <- 10^-samdat$High.CO2.pH.one2three
+samdat$High.CO2.Hplus.one2four <- 10^-samdat$High.CO2.pH.one2four
+
+row.names(samdat) = samdat$Sample.ID
+
+# Create phyloseq object
+ps = phyloseq(otu_table=otutab,sample_data=samdat)
+ps = subset_samples(ps, Sample.ID != "049-W3-Compost" & Sample.ID!="004-K2-Muck" & Sample.ID!="028-S-0-30" & Sample.ID!="029-S-30-60")
+```
+
+
+```{r, results="hide"}
+ps.melt = psmelt(ps)
+ps.melt
+
+head(ps.melt)
+
+hist(sample_sums(ps))
+
+# Relative abundances
+ps.norm = transform_sample_counts(ps,function(x) x/sum(x))
+head(otu_table(ps.norm))
+sample_sums(ps.norm)
+# Looks good
+
+colnames(sample_data(ps.norm))
+```
+
+## Acidity Values
+
+### Diversity Plots
+
+```{r nmds-bray-soilph-Lab.CO2.pH.one2one-both-studies, fig.height=4, fig.width=6}
+ps.ord.nmds = ordinate(ps.norm, "NMDS", "bray", trymax=1000, k=3)
+p = plot_ordination(ps.norm, ps.ord.nmds, type="samples")
+palette = brewer.pal(8, "Spectral")
+p = p + aes(colour=Lab.CO2.pH.one2one, shape=Study) + geom_point(size=3) + 
+  scale_colour_gradientn(colors=palette) + 
+  theme_bw()
+p
+```
+
+```{r nmds-bray-soilph-Lab.CO2.pH.one2one, fig.height=4, fig.width=9}
+ps.ord.nmds = ordinate(ps.norm, "NMDS", "bray",trymax=1000,k=3)
+p = plot_ordination(ps.norm, ps.ord.nmds, type="samples")
+palette = brewer.pal(8, "Spectral")
+p = p + aes(colour=Lab.CO2.pH.one2one) + geom_point(size=3) + 
+  scale_colour_gradientn(colors=palette) + facet_wrap(~Study) + 
+  theme_bw()
+p
+```
+
+```{r nmds-bray-soilph-Lab.CO2.pH.one2two, fig.height=4, fig.width=9}
+ps.ord.nmds = ordinate(ps.norm, "NMDS", "bray",trymax=1000,k=3)
+p = plot_ordination(ps.norm, ps.ord.nmds, type="samples")
+palette = brewer.pal(8, "Spectral")
+p = p + aes(colour=Lab.CO2.pH.one2two) + geom_point(size=3) + 
+  scale_colour_gradientn(colors=palette) + facet_wrap(~Study) + 
+  theme_bw()
+p
+```
+
+```{r nmds-bray-soilph-Lab.CO2.pH.one2thre, fig.height=4, fig.width=9}
+ps.ord.nmds = ordinate(ps.norm, "NMDS", "bray",trymax=1000,k=3)
+p = plot_ordination(ps.norm, ps.ord.nmds, type="samples")
+palette = brewer.pal(8, "Spectral")
+p = p + aes(colour=Lab.CO2.pH.one2three) + geom_point(size=3) + 
+  scale_colour_gradientn(colors=palette) + facet_wrap(~Study) + 
+  theme_bw()
+p
+```
+
+```{r nmds-bray-soilph-Lab.CO2.pH.one2four, fig.height=4, fig.width=9}
+ps.ord.nmds = ordinate(ps.norm, "NMDS", "bray",trymax=1000,k=3)
+p = plot_ordination(ps.norm, ps.ord.nmds, type="samples")
+palette = brewer.pal(8, "Spectral")
+p = p + aes(colour=Lab.CO2.pH.one2four) + geom_point(size=3) + 
+  scale_colour_gradientn(colors=palette) + facet_wrap(~Study) + 
+  theme_bw()
+p
+```
+
+```{r richness-ph-Lab.CO2.pH.one2one, fig.width=13, fig.height=4}
+p <- plot_richness(ps, x="Lab.CO2.pH.one2one", measures=c("Observed","Simpson","Shannon"), scales = "free_y", shape="Study")
+p + geom_point(size=4, alpha=0.2) + theme_bw()
+```
+
+```{r richness-ph-Lab.CO2.pH.one2two, fig.width=13, fig.height=4}
+p <- plot_richness(ps, x="Lab.CO2.pH.one2two", measures=c("Observed","Simpson","Shannon"), scales = "free_y", shape="Study")
+p + geom_point(size=4, alpha=0.2) + theme_bw()
+```
+
+```{r richness-ph-Lab.CO2.pH.one2three, fig.width=13, fig.height=4}
+p <- plot_richness(ps, x="Lab.CO2.pH.one2three", measures=c("Observed","Simpson","Shannon"), scales = "free_y", shape="Study")
+p + geom_point(size=4, alpha=0.2) + theme_bw()
+```
+
+```{r richness-ph-Lab.CO2.pH.one2four, fig.width=13, fig.height=4}
+p <- plot_richness(ps, x="Lab.CO2.pH.one2four", measures=c("Observed","Simpson","Shannon"), scales = "free_y", shape="Study")
+p + geom_point(size=4, alpha=0.2) + theme_bw()
+```
+
+```{r richness-ph-Lab.CO2.Hplus.one2one, fig.width=13, fig.height=4}
+p <- plot_richness(ps, x="Lab.CO2.Hplus.one2one", measures=c("Observed","Simpson","Shannon"), scales = "free_y", shape="Study")
+p + geom_point(size=4, alpha=0.2) + theme_bw()
+```
+
+```{r richness-ph-Lab.CO2.Hplus.one2two, fig.width=13, fig.height=4}
+p <- plot_richness(ps, x="Lab.CO2.Hplus.one2two", measures=c("Observed","Simpson","Shannon"), scales = "free_y", shape="Study")
+p + geom_point(size=4, alpha=0.2) + theme_bw()
+```
+
+```{r richness-ph-Lab.CO2.Hplus.one2three, fig.width=13, fig.height=4}
+p <- plot_richness(ps, x="Lab.CO2.Hplus.one2three", measures=c("Observed","Simpson","Shannon"), scales = "free_y", shape="Study")
+p + geom_point(size=4, alpha=0.2) + theme_bw()
+```
+
+```{r richness-ph-Lab.CO2.Hplus.one2four, fig.width=13, fig.height=4}
+p <- plot_richness(ps, x="Lab.CO2.Hplus.one2four", measures=c("Observed","Simpson","Shannon"), scales = "free_y", shape="Study")
+p + geom_point(size=4, alpha=0.2) + theme_bw()
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Spooner Vs. Wisconsin
+
+```{r subset-wisc-and-spooner}
+ps.wisc <- subset_samples(ps, Study=="Wisconsin")
+ps.spoon <- subset_samples(ps, Study=="Spooner")
+```
+
+```{r richness-ph-Lab.CO2.pH.one2one.wisc, fig.width=13, fig.height=4}
+p.Lab.CO2.pH.one2one.wisc <- plot_richness(ps.wisc, x="Lab.CO2.pH.one2one", measures=c("Observed","Simpson","Shannon"), scales = "free_y") + geom_point(size=4, alpha=0.2) + theme_bw() + labs(x = "pH of Wisconsin Soils of 1:1 Water:Soil Ratio at approx. 400 ppm Carbon Dioxide")
+p.Lab.CO2.pH.one2one.wisc
+```
+
+```{r richness-ph-Lab.CO2.pH.one2two.wisc, fig.width=13, fig.height=4}
+p <- plot_richness(ps.wisc, x="Lab.CO2.pH.one2two", measures=c("Observed","Simpson","Shannon"), scales = "free_y")
+p + geom_point(size=4, alpha=0.2) + theme_bw()
+```
+
+```{r richness-ph-Lab.CO2.pH.one2three.wisc, fig.width=13, fig.height=4}
+p <- plot_richness(ps.wisc, x="Lab.CO2.pH.one2three", measures=c("Observed","Simpson","Shannon"), scales = "free_y")
+p + geom_point(size=4, alpha=0.2) + theme_bw()
+```
+
+```{r richness-ph-Lab.CO2.pH.one2four.wisc, fig.width=13, fig.height=4}
+p.Lab.CO2.pH.one2four.wisc <- plot_richness(ps.wisc, x="Lab.CO2.pH.one2four", measures=c("Observed","Simpson","Shannon"), scales = "free_y") + geom_point(size=4, alpha=0.2) + theme_bw()  + labs(x = "pH of Wisconsin Soils of 1:4 Water:Soil Ratio at approx. 400 ppm Carbon Dioxide")
+p.Lab.CO2.pH.one2four.wisc
+```
+
+```{r richness-ph-Lab.CO2.Hplus.one2one.wisc, fig.width=13, fig.height=4}
+p <- plot_richness(ps.wisc, x="Lab.CO2.Hplus.one2one", measures=c("Observed","Simpson","Shannon"), scales = "free_y")
+p + geom_point(size=4, alpha=0.2) + theme_bw()
+```
+
+```{r richness-ph-Lab.CO2.Hplus.one2two.wisc, fig.width=13, fig.height=4}
+p <- plot_richness(ps.wisc, x="Lab.CO2.Hplus.one2two", measures=c("Observed","Simpson","Shannon"), scales = "free_y")
+p + geom_point(size=4, alpha=0.2) + theme_bw()
+```
+
+```{r richness-ph-Lab.CO2.Hplus.one2three.wisc, fig.width=13, fig.height=4}
+p <- plot_richness(ps.wisc, x="Lab.CO2.Hplus.one2three", measures=c("Observed","Simpson","Shannon"), scales = "free_y")
+p + geom_point(size=4, alpha=0.2) + theme_bw()
+```
+
+```{r richness-ph-Lab.CO2.Hplus.one2four.wisc, fig.width=13, fig.height=4}
+p <- plot_richness(ps.wisc, x="Lab.CO2.Hplus.one2four", measures=c("Observed","Simpson","Shannon"), scales = "free_y")
+p + geom_point(size=4, alpha=0.2) + theme_bw()
+```
+
+
+```{r richness-ph-Lab.CO2.pH.one2one.spoon, fig.width=13, fig.height=4}
+p.Lab.CO2.pH.one2one.spoon <- plot_richness(ps.spoon, x="Lab.CO2.pH.one2one", measures=c("Observed","Simpson","Shannon"), scales = "free_y") + geom_point(size=4, alpha=0.2) + theme_bw() + labs(x = "pH of Spooner Soils of 1:1 Water:Soil Ratio at approx. 400 ppm Carbon Dioxide")
+p.Lab.CO2.pH.one2one.spoon
+```
+
+```{r richness-ph-Lab.CO2.pH.one2two.spoon, fig.width=13, fig.height=4}
+p <- plot_richness(ps.spoon, x="Lab.CO2.pH.one2two", measures=c("Observed","Simpson","Shannon"), scales = "free_y")
+p + geom_point(size=4, alpha=0.2) + theme_bw()
+```
+
+```{r richness-ph-Lab.CO2.pH.one2three.spoon, fig.width=13, fig.height=4}
+p <- plot_richness(ps.spoon, x="Lab.CO2.pH.one2three", measures=c("Observed","Simpson","Shannon"), scales = "free_y")
+p + geom_point(size=4, alpha=0.2) + theme_bw()
+```
+
+```{r richness-ph-Lab.CO2.pH.one2four.spoon, fig.width=13, fig.height=4}
+p.Lab.CO2.pH.one2four.spoon <- plot_richness(ps.spoon, x="Lab.CO2.pH.one2four", measures=c("Observed","Simpson","Shannon"), scales = "free_y") + geom_point(size=4, alpha=0.2) + theme_bw() + labs(x = "pH of Spooner Soils of 1:4 Water:Soil Ratio at approx. 400 ppm Carbon Dioxide")
+p.Lab.CO2.pH.one2four.spoon
+```
+
+```{r richness-ph-Lab.CO2.Hplus.one2one.spoon, fig.width=13, fig.height=4}
+p <- plot_richness(ps.spoon, x="Lab.CO2.Hplus.one2one", measures=c("Observed","Simpson","Shannon"), scales = "free_y")
+p + geom_point(size=4, alpha=0.2) + theme_bw()
+```
+
+```{r richness-ph-Lab.CO2.Hplus.one2two.spoon, fig.width=13, fig.height=4}
+p <- plot_richness(ps.spoon, x="Lab.CO2.Hplus.one2two", measures=c("Observed","Simpson","Shannon"), scales = "free_y")
+p + geom_point(size=4, alpha=0.2) + theme_bw()
+```
+
+```{r richness-ph-Lab.CO2.Hplus.one2three.spoon, fig.width=13, fig.height=4}
+p <- plot_richness(ps.spoon, x="Lab.CO2.Hplus.one2three", measures=c("Observed","Simpson","Shannon"), scales = "free_y")
+p + geom_point(size=4, alpha=0.2) + theme_bw()
+```
+
+```{r richness-ph-Lab.CO2.Hplus.one2four.spoon, fig.width=13, fig.height=4}
+p <- plot_richness(ps.spoon, x="Lab.CO2.Hplus.one2four", measures=c("Observed","Simpson","Shannon"), scales = "free_y")
+p + geom_point(size=4, alpha=0.2) + theme_bw()
+```
+
+
+```{r richness-ph-High.CO2.pH.one2one.wisc, fig.width=13, fig.height=4}
+p.High.CO2.pH.one2one.wisc <- plot_richness(ps.wisc, x="High.CO2.pH.one2one", measures=c("Observed","Simpson","Shannon"), scales = "free_y") + geom_point(size=4, alpha=0.2) + theme_bw() + labs(x = "pH of Wisconsin Soils of 1:1 Water:Soil Ratio at approx. 2% Carbon Dioxide")
+p.High.CO2.pH.one2one.wisc
+```
+
+```{r richness-ph-High.CO2.pH.one2two.wisc, fig.width=13, fig.height=4}
+p <- plot_richness(ps.wisc, x="High.CO2.pH.one2two", measures=c("Observed","Simpson","Shannon"), scales = "free_y")
+p + geom_point(size=4, alpha=0.2) + theme_bw()
+```
+
+```{r richness-ph-High.CO2.pH.one2three.wisc, fig.width=13, fig.height=4}
+p <- plot_richness(ps.wisc, x="High.CO2.pH.one2three", measures=c("Observed","Simpson","Shannon"), scales = "free_y")
+p + geom_point(size=4, alpha=0.2) + theme_bw()
+```
+
+```{r richness-ph-High.CO2.pH.one2four.wisc, fig.width=13, fig.height=4}
+p.High.CO2.pH.one2four.wisc <- plot_richness(ps.wisc, x="High.CO2.pH.one2four", measures=c("Observed","Simpson","Shannon"), scales = "free_y") + geom_point(size=4, alpha=0.2) + theme_bw() + labs(x = "pH of Wisconsin Soils of 1:4 Water:Soil Ratio at approx. 2% Carbon Dioxide")
+p.High.CO2.pH.one2four.wisc
+```
+
+```{r richness-ph-High.CO2.Hplus.one2one.wisc, fig.width=13, fig.height=4}
+p <- plot_richness(ps.wisc, x="High.CO2.Hplus.one2one", measures=c("Observed","Simpson","Shannon"), scales = "free_y")
+p + geom_point(size=4, alpha=0.2) + theme_bw()
+```
+
+```{r richness-ph-High.CO2.Hplus.one2two.wisc, fig.width=13, fig.height=4}
+p <- plot_richness(ps.wisc, x="High.CO2.Hplus.one2two", measures=c("Observed","Simpson","Shannon"), scales = "free_y")
+p + geom_point(size=4, alpha=0.2) + theme_bw()
+```
+
+```{r richness-ph-High.CO2.Hplus.one2three.wisc, fig.width=13, fig.height=4}
+p <- plot_richness(ps.wisc, x="High.CO2.Hplus.one2three", measures=c("Observed","Simpson","Shannon"), scales = "free_y")
+p + geom_point(size=4, alpha=0.2) + theme_bw()
+```
+
+```{r richness-ph-High.CO2.Hplus.one2four.wisc, fig.width=13, fig.height=4}
+p <- plot_richness(ps.wisc, x="High.CO2.Hplus.one2four", measures=c("Observed","Simpson","Shannon"), scales = "free_y")
+p + geom_point(size=4, alpha=0.2) + theme_bw()
+```
+
+```{r richness-ph-High.CO2.pH.one2one.spoon, fig.width=13, fig.height=4}
+p.High.CO2.pH.one2one.spoon <- plot_richness(ps.spoon, x="High.CO2.pH.one2one", measures=c("Observed","Simpson","Shannon"), scales = "free_y") + geom_point(size=4, alpha=0.2) + theme_bw() + labs(x = "pH of Spooner Soils of 1:1 Water:Soil Ratio at approx. 2% Carbon Dioxide")
+p.High.CO2.pH.one2one.spoon
+```
+
+```{r richness-ph-High.CO2.pH.one2two.spoon, fig.width=13, fig.height=4}
+p <- plot_richness(ps.spoon, x="High.CO2.pH.one2two", measures=c("Observed","Simpson","Shannon"), scales = "free_y")
+p + geom_point(size=4, alpha=0.2) + theme_bw()
+```
+
+```{r richness-ph-High.CO2.pH.one2three.spoon, fig.width=13, fig.height=4}
+p <- plot_richness(ps.spoon, x="High.CO2.pH.one2three", measures=c("Observed","Simpson","Shannon"), scales = "free_y")
+p + geom_point(size=4, alpha=0.2) + theme_bw()
+```
+
+```{r richness-ph-High.CO2.pH.one2four.spoon, fig.width=13, fig.height=4}
+p.High.CO2.pH.one2four.spoon <- plot_richness(ps.spoon, x = "High.CO2.pH.one2four", measures = c("Observed","Simpson","Shannon")) + geom_point(size=4, alpha=0.2) + theme_bw() + labs(x = "pH of Spooner Soils of 1:4 Water:Soil Ratio at approx. 2% Carbon Dioxide")
+p.High.CO2.pH.one2four.spoon
+```
+
+```{r richness-ph-High.CO2.Hplus.one2one.spoon, fig.width=13, fig.height=4}
+p <- plot_richness(ps.spoon, x="High.CO2.Hplus.one2one", measures=c("Observed","Simpson","Shannon"), scales = "free_y")
+p + geom_point(size=4, alpha=0.2) + theme_bw()
+```
+
+```{r richness-ph-High.CO2.Hplus.one2two.spoon, fig.width=13, fig.height=4}
+p <- plot_richness(ps.spoon, x="High.CO2.Hplus.one2two", measures=c("Observed","Simpson","Shannon"), scales = "free_y")
+p + geom_point(size=4, alpha=0.2) + theme_bw()
+```
+
+```{r richness-ph-High.CO2.Hplus.one2three, fig.width=13, fig.height=4}
+p <- plot_richness(ps, x="High.CO2.Hplus.one2three", measures=c("Observed","Simpson","Shannon"), scales = "free_y")
+p + geom_point(size=4, alpha=0.2) + theme_bw()
+```
+
+```{r richness-ph-High.CO2.Hplus.one2four.spoon, fig.width=13, fig.height=4}
+p <- plot_richness(ps.spoon, x="High.CO2.Hplus.one2four", measures=c("Observed","Simpson","Shannon"), scales = "free_y")
+p + geom_point(size=4, alpha=0.2) + theme_bw()
+```
+
+
+
+```{r diversity-plot, fig.height=10, fig.width=12}
+plot_grid(p.Lab.CO2.pH.one2one.wisc, p.Lab.CO2.pH.one2four.wisc, p.High.CO2.pH.one2one.wisc, p.High.CO2.pH.one2four.wisc, p.Lab.CO2.pH.one2one.spoon, p.Lab.CO2.pH.one2four.spoon, p.High.CO2.pH.one2one.spoon, p.High.CO2.pH.one2four.spoon, ncol=2, align = "hv", labels=LETTERS[1:8])
+```
+
+
+
+
+
+
+
+### Permanova Plot
+
+```{r permanova-all-factors-ph}
+df = as(sample_data(ps.norm), "data.frame")
+d = phyloseq::distance(ps.norm, "bray") 
+ps.adonis = adonis(d ~ Lab.CO2.pH.one2one+Lab.CO2.pH.one2two+Lab.CO2.pH.one2two+Lab.CO2.pH.one2three+Lab.CO2.pH.one2four+High.CO2.pH.one2one+High.CO2.pH.one2two+High.CO2.pH.one2two+High.CO2.pH.one2three+High.CO2.pH.one2four+Lab.CO2.Hplus.one2one+Lab.CO2.Hplus.one2two+Lab.CO2.Hplus.one2two+Lab.CO2.Hplus.one2three+Lab.CO2.Hplus.one2four+High.CO2.Hplus.one2one+High.CO2.Hplus.one2two+High.CO2.Hplus.one2two+High.CO2.Hplus.one2three+High.CO2.Hplus.one2four+DNA.Extr.pH.After.C1+DNA.Extr.pH.After.C2+DNA.Extr.Hplus.After.C1+DNA.Extr.Hplus.After.C2+Study, df)
+ps.adonis
+```
+
+```{r permanova-all-treatments-ph}
+df = as(sample_data(ps.norm), "data.frame")
+d = phyloseq::distance(ps.norm, "bray") 
+ps.adonis = adonis(d ~ Lab.CO2.pH.one2one+Lab.CO2.pH.one2two+Lab.CO2.pH.one2two+Lab.CO2.pH.one2three+Lab.CO2.pH.one2four+High.CO2.pH.one2one+High.CO2.pH.one2two+High.CO2.pH.one2two+High.CO2.pH.one2three+High.CO2.pH.one2four+DNA.Extr.pH.After.C1+DNA.Extr.pH.After.C2, df)
+ps.adonis
+```
+
+```{r rsq-permanova-plot-ph}
+rows.permanova <- rownames(ps.adonis$aov.tab)[1:10]
+rows.permanova.nice <- c("1-to-1 Soil pH at 400ppm CO2","1-to-2 Soil pH at 400ppm CO2","1-to-3 Soil pH at 400ppm CO2","1-to-4 Soil pH at 400ppm CO2","1-to-1 Soil pH at 2% CO2","1-to-2 Soil pH at 2% CO2","1-to-3 Soil pH at 2% CO2","1-to-4 Soil pH at 2% CO2","Lysate pH in Buffer C1","Lysate pH in Buffer C2")
+rsp.permanova <- ps.adonis$aov.tab[,5][1:10]
+Suspension <- c("1-to-1","1-to-2","1-to-3","1-to-4","1-to-1","1-to-2","1-to-3","1-to-4","Buffer C1", "Buffer C2")
+CO2.Level <- c("400ppm","400ppm","400ppm","400ppm","2%","2%","2%","2%","Laboratory","Laboratory")
+dat.rsp.permanova <- data.frame(rows.permanova, rows.permanova.nice, rsp.permanova, Suspension, CO2.Level)
+p <- ggplot(dat.rsp.permanova, aes(rsp.permanova, rows.permanova.nice, color=CO2.Level, shape=Suspension))
+p + geom_point(size = 4) + theme_bw() + labs(y = "Treatment") +
+  scale_x_continuous(name="PERMANOVA R-squared Value", limits=c(0, 0.075), breaks=c(0, .01, .02, .03, .04, .05, .06, 0.07))
+```
+
+```{r permanova-all-treatments-hplus}
+df = as(sample_data(ps.norm), "data.frame")
+d = phyloseq::distance(ps.norm, "bray") 
+ps.adonis.hplus = adonis(d ~ Lab.CO2.Hplus.one2one+Lab.CO2.Hplus.one2two+Lab.CO2.Hplus.one2two+Lab.CO2.Hplus.one2three+Lab.CO2.Hplus.one2four+High.CO2.Hplus.one2one+High.CO2.Hplus.one2two+High.CO2.Hplus.one2two+High.CO2.Hplus.one2three+High.CO2.Hplus.one2four+DNA.Extr.Hplus.After.C1+DNA.Extr.Hplus.After.C2, df)
+ps.adonis.hplus
+```
+
+```{r rsq-permanova-plot-hplus}
+rows.permanova.hplus <- rownames(ps.adonis.hplus$aov.tab)[1:10]
+rows.permanova.nice.hplus <- c("1-to-1 Soil a(H+) at 400ppm CO2","1-to-2 Soil a(H+) at 400ppm CO2","1-to-3 Soil a(H+) at 400ppm CO2","1-to-4 Soil Hplus at 400ppm CO2","1-to-1 Soil a(H+) at 2% CO2","1-to-2 Soil a(H+) at 2% CO2","1-to-3 Soil a(H+) at 2% CO2","1-to-4 Soil a(H+) at 2% CO2","Lysate a(H+) in Buffer C1","Lysate a(H+) in Buffer C2")
+rsp.permanova.hplus <- ps.adonis.hplus$aov.tab[,5][1:10]
+Suspension <- c("1-to-1","1-to-2","1-to-3","1-to-4","1-to-1","1-to-2","1-to-3","1-to-4","Buffer C1", "Buffer C2")
+CO2.Level <- c("400ppm","400ppm","400ppm","400ppm","2%","2%","2%","2%","Laboratory","Laboratory")
+dat.rsp.permanova.hplus <- data.frame(rows.permanova.hplus, rows.permanova.nice.hplus, rsp.permanova.hplus, Suspension, CO2.Level)
+p <- ggplot(dat.rsp.permanova.hplus, aes(rsp.permanova.hplus, rows.permanova.nice.hplus, color=CO2.Level, shape=Suspension))
+p + geom_point(size = 4) + theme_bw() + labs(y = "Treatment") +
+  scale_x_continuous(name="PERMANOVA R-squared Value")
+```
+
+#### Spooner vs. Wisconsin
+
+```{r }
+ps.norm.wisc <- subset_samples(ps.norm, Study=="Wisconsin")
+ps.norm.spoon <- subset_samples(ps.norm, Study=="Spooner")
+```
+
+```{r permanova-all-factors-ph-wisc}
+df.wisc = as(sample_data(ps.norm.wisc), "data.frame")
+d.wisc = phyloseq::distance(ps.norm.wisc, "bray") 
+ps.adonis.wisc = adonis(d.wisc ~ Lab.CO2.pH.one2one+Lab.CO2.pH.one2two+Lab.CO2.pH.one2two+Lab.CO2.pH.one2three+Lab.CO2.pH.one2four+High.CO2.pH.one2one+High.CO2.pH.one2two+High.CO2.pH.one2two+High.CO2.pH.one2three+High.CO2.pH.one2four+Lab.CO2.Hplus.one2one+Lab.CO2.Hplus.one2two+Lab.CO2.Hplus.one2two+Lab.CO2.Hplus.one2three+Lab.CO2.Hplus.one2four+High.CO2.Hplus.one2one+High.CO2.Hplus.one2two+High.CO2.Hplus.one2two+High.CO2.Hplus.one2three+High.CO2.Hplus.one2four+DNA.Extr.pH.After.C1+DNA.Extr.pH.After.C2+DNA.Extr.Hplus.After.C1+DNA.Extr.Hplus.After.C2, df.wisc)
+ps.adonis.wisc
+```
+
+```{r permanova-all-treatments-ph-wisc-ph}
+ps.adonis.wisc.ph = adonis(d.wisc ~ Lab.CO2.pH.one2one+Lab.CO2.pH.one2two+Lab.CO2.pH.one2two+Lab.CO2.pH.one2three+Lab.CO2.pH.one2four+High.CO2.pH.one2one+High.CO2.pH.one2two+High.CO2.pH.one2two+High.CO2.pH.one2three+High.CO2.pH.one2four+DNA.Extr.pH.After.C1+DNA.Extr.pH.After.C2, df.wisc)
+ps.adonis.wisc.ph
+```
+
+```{r permanova-all-factors-ph-spoon}
+df.spoon = as(sample_data(ps.norm.spoon), "data.frame")
+d.spoon = phyloseq::distance(ps.norm.spoon, "bray") 
+ps.adonis.spoon = adonis(d.spoon ~ Lab.CO2.pH.one2one+Lab.CO2.pH.one2two+Lab.CO2.pH.one2two+Lab.CO2.pH.one2three+Lab.CO2.pH.one2four+High.CO2.pH.one2one+High.CO2.pH.one2two+High.CO2.pH.one2two+High.CO2.pH.one2three+High.CO2.pH.one2four+Lab.CO2.Hplus.one2one+Lab.CO2.Hplus.one2two+Lab.CO2.Hplus.one2two+Lab.CO2.Hplus.one2three+Lab.CO2.Hplus.one2four+High.CO2.Hplus.one2one+High.CO2.Hplus.one2two+High.CO2.Hplus.one2two+High.CO2.Hplus.one2three+High.CO2.Hplus.one2four+DNA.Extr.pH.After.C1+DNA.Extr.pH.After.C2+DNA.Extr.Hplus.After.C1+DNA.Extr.Hplus.After.C2, df.spoon)
+ps.adonis.spoon
+```
+
+```{r permanova-all-treatments-ph-spoon-ph}
+ps.adonis.spoon.ph = adonis(d.spoon ~ Lab.CO2.pH.one2one+Lab.CO2.pH.one2two+Lab.CO2.pH.one2two+Lab.CO2.pH.one2three+Lab.CO2.pH.one2four+High.CO2.pH.one2one+High.CO2.pH.one2two+High.CO2.pH.one2two+High.CO2.pH.one2three+High.CO2.pH.one2four+DNA.Extr.pH.After.C1+DNA.Extr.pH.After.C2, df.spoon)
+ps.adonis.spoon.ph
+```
+
+
+```{r rsq-permanova-plot-ph-wisc-spoon, fig.width=7, fig.height=3}
+rows.permanova <- c(rownames(ps.adonis.wisc.ph$aov.tab)[1:10], rownames(ps.adonis.spoon.ph$aov.tab)[1:10])
+rows.permanova.nice <- c("1-to-1 Soil pH at 400ppm CO2","1-to-2 Soil pH at 400ppm CO2","1-to-3 Soil pH at 400ppm CO2","1-to-4 Soil pH at 400ppm CO2","1-to-1 Soil pH at 2% CO2","1-to-2 Soil pH at 2% CO2","1-to-3 Soil pH at 2% CO2","1-to-4 Soil pH at 2% CO2","Lysate pH in Buffer C1","Lysate pH in Buffer C2")
+rows.permanova.nice <- c(rows.permanova.nice, rows.permanova.nice)
+rsp.permanova <- c(ps.adonis.wisc.ph$aov.tab[,5][1:10], ps.adonis.spoon.ph$aov.tab[,5][1:10])
+Study <- c("Wisconsin","Wisconsin","Wisconsin","Wisconsin","Wisconsin","Wisconsin","Wisconsin","Wisconsin","Wisconsin","Wisconsin","Spooner","Spooner","Spooner","Spooner","Spooner","Spooner","Spooner","Spooner","Spooner","Spooner")
+Suspension <- c("1-to-1","1-to-2","1-to-3","1-to-4","1-to-1","1-to-2","1-to-3","1-to-4","Buffer C1", "Buffer C2")
+Suspension <- c(Suspension, Suspension)
+CO2.Level <- c("400ppm","400ppm","400ppm","400ppm","2%","2%","2%","2%","Laboratory","Laboratory")
+CO2.Level <- c(CO2.Level, CO2.Level)
+dat.rsp.permanova <- data.frame(rows.permanova, rows.permanova.nice, rsp.permanova, Suspension, CO2.Level, Study)
+p <- ggplot(dat.rsp.permanova, aes(rsp.permanova, rows.permanova.nice, shape=Study))
+p + geom_point(size = 3) + geom_point(color="grey", size = 1) + theme_bw() + labs(y = "Treatment or Lysate") + 
+  scale_x_continuous(name="PERMANOVA R-squared Value", limits=c(0, 0.15), 
+                     breaks=seq(0:0.15, by=.02))
+```
+
+![2020-03-24-whitman-figure-request-sketch.jpeg](/Volumes/brausm05/Sync/projects/soil-ph-microbial/source/2020-03-24-whitman-figure-request/2020-03-24-whitman-figure-request-sketch.jpeg){width=50%}
+
+```{r whitman-figure-request-wisc}
+dat.1to1 <- subset(dat.wisc, Study!=""&Water.Soil.Ratio=="1-to-1")
+ph1to1lab <- dat.1to1$Lab.CO2.pH
+ph1to1high <- dat.1to1$High.CO2.pH
+dat.1to2 <- subset(dat.wisc, Study!=""&Water.Soil.Ratio=="1-to-2")
+ph1to2lab <- dat.1to2$Lab.CO2.pH
+ph1to2high <- dat.1to2$High.CO2.pH
+dat.1to3 <- subset(dat.wisc, Study!=""&Water.Soil.Ratio=="1-to-3")
+ph1to3lab <- dat.1to3$Lab.CO2.pH
+ph1to3high <- dat.1to3$High.CO2.pH
+dat.1to4 <- subset(dat.wisc, Study!=""&Water.Soil.Ratio=="1-to-4")
+ph1to4lab <- dat.1to4$Lab.CO2.pH
+ph1to4high <- dat.1to4$High.CO2.pH
+```
+
+```{r whitman-figure-request-2-lab-wisc, fig.height=4, fig.width=4}
+lmod2lab <- lm(ph1to2lab ~ ph1to1lab)
+coeff=coefficients(lmod2lab)
+eq = paste0("slope = ", round(coeff[2],2), ", int. = ", round(coeff[1],2))
+plot(ph1to1lab, ph1to2lab, main=eq,
+   xlab="1:1 pH at ~400ppm CO2", ylab="1:2 pH at ~400ppm CO2")
+abline(lmod2lab, col="blue", lty = 2)
+abline(a=0, b=1)
+```
+
+```{r whitman-figure-request-2-high-wisc, fig.height=4, fig.width=4}
+lmod2high <- lm(ph1to2high ~ ph1to1high)
+coeff=coefficients(lmod2high)
+eq = paste0("slope = ", round(coeff[2],2), ", int. = ", round(coeff[1],2))
+plot(ph1to1high, ph1to2high, main=eq,
+   xlab="1:1 pH at ~2% CO2", ylab="1:2 pH at ~2% CO2")
+abline(lmod2high, col="blue", lty = 2)
+abline(a=0, b=1)
+```
+
+```{r whitman-figure-request-3-lab-wisc, fig.height=4, fig.width=4}
+lmod3lab <- lm(ph1to3lab ~ ph1to1lab)
+coeff=coefficients(lmod3lab)
+eq = paste0("slope = ", round(coeff[2],2), ", int. = ", round(coeff[1],2))
+plot(ph1to1lab, ph1to3lab, main=eq,
+   xlab="1:1 pH at ~400ppm CO2", ylab="1:3 pH at ~400ppm CO2")
+abline(lmod3lab, col="blue", lty = 2)
+abline(a=0, b=1)
+```
+
+```{r whitman-figure-request-3-high-wisc, fig.height=4, fig.width=4}
+lmod3high <- lm(ph1to3high ~ ph1to1high)
+coeff=coefficients(lmod3high)
+eq = paste0("slope = ", round(coeff[2],2), ", int. = ", round(coeff[1],2))
+plot(ph1to1high, ph1to3high, main=eq,
+   xlab="1:1 pH at ~2% CO2", ylab="1:3 pH at ~2% CO2")
+abline(lmod3high, col="blue", lty = 2)
+abline(a=0, b=1)
+```
+
+```{r whitman-figure-request-4-lab-wisc, fig.height=4, fig.width=4}
+lmod4lab <- lm(ph1to4lab ~ ph1to1lab)
+coeff=coefficients(lmod4lab)
+eq = paste0("slope = ", round(coeff[2],2), ", int. = ", round(coeff[1],2))
+plot(ph1to1lab, ph1to4lab, main=eq,
+   xlab="1:1 pH at ~400ppm CO2", ylab="1:4 pH at ~400ppm CO2")
+abline(lmod4lab, col="blue", lty = 2)
+abline(a=0, b=1)
+```
+
+```{r whitman-figure-request-4-high-wisc, fig.height=4, fig.width=4}
+lmod4high <- lm(ph1to4high ~ ph1to1high)
+coeff=coefficients(lmod4high)
+eq = paste0("slope = ", round(coeff[2],2), ", int. = ", round(coeff[1],2))
+plot(ph1to1high, ph1to4high, main=eq,
+   xlab="1:1 pH at ~2% CO2", ylab="1:4 pH at ~2% CO2")
+abline(lmod4high, col="blue", lty = 2)
+abline(a=0, b=1)
+```
+
+```{r whitman-figure-request-2-lab-hplus-wisc, fig.height=4, fig.width=4}
+lmod2lab.hplus <- lm(as.numeric(10^-ph1to2lab) ~ as.numeric(10^-ph1to1lab))
+coeff=coefficients(lmod2lab.hplus)
+eq = paste0("slope = ", round(coeff[2],2), ", int. = ", round(coeff[1],2))
+plot(as.numeric(10^-ph1to1lab), as.numeric(10^-ph1to2lab), main=eq,
+   xlab="1:1 aH+ at ~400ppm CO2", ylab="1:2 aH+ at ~400ppm CO2")
+abline(lmod2lab.hplus, col="blue", lty = 2)
+abline(a=0, b=1)
+```
+
+```{r whitman-figure-request-2-high-hplus-wisc, fig.height=4, fig.width=4}
+lmod2high.hplus <- lm(as.numeric(10^-ph1to2high) ~ as.numeric(10^-ph1to1high))
+coeff=coefficients(lmod2high.hplus)
+eq = paste0("slope = ", round(coeff[2],2), ", int. = ", round(coeff[1],2))
+plot(as.numeric(10^-ph1to1high), as.numeric(10^-ph1to2high), main=eq,
+   xlab="1:1 aH= at ~2% CO2", ylab="1:2 aH+ at ~2% CO2")
+abline(lmod2high.hplus, col="blue", lty = 2)
+abline(a=0, b=1)
+```
+
+```{r whitman-figure-request-3-lab-hplus-wisc, fig.height=4, fig.width=4}
+lmod3lab.hplus <- lm(as.numeric(10^-ph1to3lab) ~ as.numeric(10^-ph1to1lab))
+coeff=coefficients(lmod3lab.hplus)
+eq = paste0("slope = ", round(coeff[2],2), ", int. = ", round(coeff[1],2))
+plot(as.numeric(10^-ph1to1lab), as.numeric(10^-ph1to3lab), main=eq,
+   xlab="1:1 aH+ at ~400ppm CO2", ylab="1:3 aH+ at ~400ppm CO2")
+abline(lmod3lab.hplus, col="blue", lty = 2)
+abline(a=0, b=1)
+```
+
+```{r whitman-figure-request-3-high-hplus-wisc, fig.height=4, fig.width=4}
+lmod3high.hplus <- lm(as.numeric(10^-ph1to3high) ~ as.numeric(10^-ph1to1high))
+coeff=coefficients(lmod3high.hplus)
+eq = paste0("slope = ", round(coeff[2],2), ", int. = ", round(coeff[1],2))
+plot(as.numeric(10^-ph1to1high), as.numeric(10^-ph1to3high), main=eq,
+   xlab="1:1 aH= at ~2% CO2", ylab="1:3 aH+ at ~2% CO2")
+abline(lmod3high.hplus, col="blue", lty = 2)
+abline(a=0, b=1)
+```
+
+```{r whitman-figure-request-4-lab-hplus-wisc, fig.height=4, fig.width=4}
+lmod4lab.hplus <- lm(as.numeric(10^-ph1to4lab) ~ as.numeric(10^-ph1to1lab))
+coeff=coefficients(lmod4lab.hplus)
+eq = paste0("slope = ", round(coeff[2],2), ", int. = ", round(coeff[1],2))
+plot(as.numeric(10^-ph1to1lab), as.numeric(10^-ph1to4lab), main=eq,
+   xlab="1:1 aH+ at ~400ppm CO2", ylab="1:4 aH+ at ~400ppm CO2")
+abline(lmod4lab.hplus, col="blue", lty = 2)
+abline(a=0, b=1)
+```
+
+```{r whitman-figure-request-4-high-hplus-wisc, fig.height=4, fig.width=4}
+lmod4high.hplus <- lm(as.numeric(10^-ph1to4high) ~ as.numeric(10^-ph1to1high))
+coeff=coefficients(lmod4high.hplus)
+eq = paste0("slope = ", round(coeff[2],2), ", int. = ", round(coeff[1],2))
+plot(as.numeric(10^-ph1to1high), as.numeric(10^-ph1to4high), main=eq,
+   xlab="1:1 aH= at ~2% CO2", ylab="1:4 aH+ at ~2% CO2")
+abline(lmod4high.hplus, col="blue", lty = 2)
+abline(a=0, b=1)
+```
+
+
+
+```{r whitman-figure-request-spooner}
+dat.1to1 <- subset(dat.spooner, Study!=""&Water.Soil.Ratio=="1-to-1")
+ph1to1lab <- dat.1to1$Lab.CO2.pH
+ph1to1high <- dat.1to1$High.CO2.pH
+dat.1to2 <- subset(dat.spooner, Study!=""&Water.Soil.Ratio=="1-to-2")
+ph1to2lab <- dat.1to2$Lab.CO2.pH
+ph1to2high <- dat.1to2$High.CO2.pH
+dat.1to3 <- subset(dat.spooner, Study!=""&Water.Soil.Ratio=="1-to-3")
+ph1to3lab <- dat.1to3$Lab.CO2.pH
+ph1to3high <- dat.1to3$High.CO2.pH
+dat.1to4 <- subset(dat.spooner, Study!=""&Water.Soil.Ratio=="1-to-4")
+ph1to4lab <- dat.1to4$Lab.CO2.pH
+ph1to4high <- dat.1to4$High.CO2.pH
+```
+
+```{r whitman-figure-request-2-lab-spooner, fig.height=4, fig.width=4}
+lmod2lab <- lm(ph1to2lab ~ ph1to1lab)
+coeff=coefficients(lmod2lab)
+eq = paste0("slope = ", round(coeff[2],2), ", int. = ", round(coeff[1],2))
+plot(ph1to1lab, ph1to2lab, main=eq,
+   xlab="1:1 pH at ~400ppm CO2", ylab="1:2 pH at ~400ppm CO2")
+abline(lmod2lab, col="blue", lty = 2)
+abline(a=0, b=1)
+```
+
+```{r whitman-figure-request-2-high-spooner, fig.height=4, fig.width=4}
+lmod2high <- lm(ph1to2high ~ ph1to1high)
+coeff=coefficients(lmod2high)
+eq = paste0("slope = ", round(coeff[2],2), ", int. = ", round(coeff[1],2))
+plot(ph1to1high, ph1to2high, main=eq,
+   xlab="1:1 pH at ~2% CO2", ylab="1:2 pH at ~2% CO2")
+abline(lmod2high, col="blue", lty = 2)
+abline(a=0, b=1)
+```
+
+```{r whitman-figure-request-3-lab-spooner, fig.height=4, fig.width=4}
+lmod3lab <- lm(ph1to3lab ~ ph1to1lab)
+coeff=coefficients(lmod3lab)
+eq = paste0("slope = ", round(coeff[2],2), ", int. = ", round(coeff[1],2))
+plot(ph1to1lab, ph1to3lab, main=eq,
+   xlab="1:1 pH at ~400ppm CO2", ylab="1:3 pH at ~400ppm CO2")
+abline(lmod3lab, col="blue", lty = 2)
+abline(a=0, b=1)
+```
+
+```{r whitman-figure-request-3-high-spooner, fig.height=4, fig.width=4}
+lmod3high <- lm(ph1to3high ~ ph1to1high)
+coeff=coefficients(lmod3high)
+eq = paste0("slope = ", round(coeff[2],2), ", int. = ", round(coeff[1],2))
+plot(ph1to1high, ph1to3high, main=eq,
+   xlab="1:1 pH at ~2% CO2", ylab="1:3 pH at ~2% CO2")
+abline(lmod3high, col="blue", lty = 2)
+abline(a=0, b=1)
+```
+
+```{r whitman-figure-request-4-lab-spooner, fig.height=4, fig.width=4}
+lmod4lab <- lm(ph1to4lab ~ ph1to1lab)
+coeff=coefficients(lmod4lab)
+eq = paste0("slope = ", round(coeff[2],2), ", int. = ", round(coeff[1],2))
+plot(ph1to1lab, ph1to4lab, main=eq,
+   xlab="1:1 pH at ~400ppm CO2", ylab="1:4 pH at ~400ppm CO2")
+abline(lmod4lab, col="blue", lty = 2)
+abline(a=0, b=1)
+```
+
+```{r whitman-figure-request-4-high-spooner, fig.height=4, fig.width=4}
+lmod4high <- lm(ph1to4high ~ ph1to1high)
+coeff=coefficients(lmod4high)
+eq = paste0("slope = ", round(coeff[2],2), ", int. = ", round(coeff[1],2))
+plot(ph1to1high, ph1to4high, main=eq,
+   xlab="1:1 pH at ~2% CO2", ylab="1:4 pH at ~2% CO2")
+abline(lmod4high, col="blue", lty = 2)
+abline(a=0, b=1)
+```
+
+```{r whitman-figure-request-2-lab-hplus-spooner, fig.height=4, fig.width=4}
+lmod2lab.hplus <- lm(as.numeric(10^-ph1to2lab) ~ as.numeric(10^-ph1to1lab))
+coeff=coefficients(lmod2lab.hplus)
+eq = paste0("slope = ", round(coeff[2],2), ", int. = ", round(coeff[1],2))
+plot(as.numeric(10^-ph1to1lab), as.numeric(10^-ph1to2lab), main=eq,
+   xlab="1:1 aH+ at ~400ppm CO2", ylab="1:2 aH+ at ~400ppm CO2")
+abline(lmod2lab.hplus, col="blue", lty = 2)
+abline(a=0, b=1)
+```
+
+```{r whitman-figure-request-2-high-hplus-spooner, fig.height=4, fig.width=4}
+lmod2high.hplus <- lm(as.numeric(10^-ph1to2high) ~ as.numeric(10^-ph1to1high))
+coeff=coefficients(lmod2high.hplus)
+eq = paste0("slope = ", round(coeff[2],2), ", int. = ", round(coeff[1],2))
+plot(as.numeric(10^-ph1to1high), as.numeric(10^-ph1to2high), main=eq,
+   xlab="1:1 aH= at ~2% CO2", ylab="1:2 aH+ at ~2% CO2")
+abline(lmod2high.hplus, col="blue", lty = 2)
+abline(a=0, b=1)
+```
+
+```{r whitman-figure-request-3-lab-hplus-spooner, fig.height=4, fig.width=4}
+lmod3lab.hplus <- lm(as.numeric(10^-ph1to3lab) ~ as.numeric(10^-ph1to1lab))
+coeff=coefficients(lmod3lab.hplus)
+eq = paste0("slope = ", round(coeff[2],2), ", int. = ", round(coeff[1],2))
+plot(as.numeric(10^-ph1to1lab), as.numeric(10^-ph1to3lab), main=eq,
+   xlab="1:1 aH+ at ~400ppm CO2", ylab="1:3 aH+ at ~400ppm CO2")
+abline(lmod3lab.hplus, col="blue", lty = 2)
+abline(a=0, b=1)
+```
+
+```{r whitman-figure-request-3-high-hplus-spooner, fig.height=4, fig.width=4}
+lmod3high.hplus <- lm(as.numeric(10^-ph1to3high) ~ as.numeric(10^-ph1to1high))
+coeff=coefficients(lmod3high.hplus)
+eq = paste0("slope = ", round(coeff[2],2), ", int. = ", round(coeff[1],2))
+plot(as.numeric(10^-ph1to1high), as.numeric(10^-ph1to3high), main=eq,
+   xlab="1:1 aH= at ~2% CO2", ylab="1:3 aH+ at ~2% CO2")
+abline(lmod3high.hplus, col="blue", lty = 2)
+abline(a=0, b=1)
+```
+
+```{r whitman-figure-request-4-lab-hplus-spooner, fig.height=4, fig.width=4}
+lmod4lab.hplus <- lm(as.numeric(10^-ph1to4lab) ~ as.numeric(10^-ph1to1lab))
+coeff=coefficients(lmod4lab.hplus)
+eq = paste0("slope = ", round(coeff[2],2), ", int. = ", round(coeff[1],2))
+plot(as.numeric(10^-ph1to1lab), as.numeric(10^-ph1to4lab), main=eq,
+   xlab="1:1 aH+ at ~400ppm CO2", ylab="1:4 aH+ at ~400ppm CO2")
+abline(lmod4lab.hplus, col="blue", lty = 2)
+abline(a=0, b=1)
+```
+
+```{r whitman-figure-request-4-high-hplus-spooner, fig.height=4, fig.width=4}
+lmod4high.hplus <- lm(as.numeric(10^-ph1to4high) ~ as.numeric(10^-ph1to1high))
+coeff=coefficients(lmod4high.hplus)
+eq = paste0("slope = ", round(coeff[2],2), ", int. = ", round(coeff[1],2))
+plot(as.numeric(10^-ph1to1high), as.numeric(10^-ph1to4high), main=eq,
+   xlab="1:1 aH= at ~2% CO2", ylab="1:4 aH+ at ~2% CO2")
+abline(lmod4high.hplus, col="blue", lty = 2)
+abline(a=0, b=1)
+```
+
+
+
+
+
+---
+
+END

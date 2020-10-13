@@ -1,0 +1,354 @@
+---
+title: ""
+author: ""
+date: ""
+output:
+ pdf_document:
+    fig_caption: yes
+    number_sections: yes
+    latex_engine: xelatex
+bibliography: /Users/michaeljbrauslap/Sync/docs/references.bib
+geometry: margin = 1.0in
+header-includes:
+  \usepackage{placeins}
+  \usepackage{fancyhdr}
+  \pagestyle{fancy}
+  \usepackage{setspace}
+  \usepackage{chngcntr}
+  \setlength{\headheight}{23pt}
+  \rhead{}
+  \lfoot{Dissertation (2020)}
+  \rfoot{Braus, M. J.}
+  \counterwithin{figure}{section}
+  \counterwithin{table}{section}
+  \usepackage{lineno}
+  \linenumbers
+---
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(fig.path = 'rmd-output/',
+                      echo = FALSE, warning = FALSE, message = FALSE, cache = FALSE)
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(dev="png", dpi=300)
+```
+
+
+This is wrong: 
+
+soil-ph/2020-03-12-hatch-final-data-merged/output-rmd/rsq-permanova-plot-ph-wisc-spoon-1.png
+
+The adonis function has ordered input (for some reason), even when adding factors to the model. 
+
+```{r}
+## Biom + Metadata
+
+# Intall:
+# BiocManager::install("phyloseq")
+# Load libraries
+library(phyloseq)
+#library(dada2)
+library(ggplot2)
+library(RColorBrewer)
+library(vegan)
+
+# Here we'll load in the microbial data. 
+
+# Import sequence processing table and check it out
+# How many sequences were retained at each step?
+track = readRDS("../2020-03-12-hatch-final-data-merged/reads/track.rds")
+track
+# Import final otu table
+OTUs = readRDS("../2020-03-12-hatch-final-data-merged/reads/otutab.nochim.rds")
+# Change rows and columns so taxa are rows
+OTUs = t(OTUs)
+# Import as phyloseq object table
+otutab = otu_table(OTUs, taxa_are_rows=TRUE)
+head(otutab)
+# Look at lowest-abundance samples
+head(sort(sample_sums(otutab)))
+name = row.names(otutab)[1]
+name
+hist(nchar(row.names(otutab)))
+colnames(otutab)
+# The sample names have suffixes appended to them - we just want sample IDs
+# Get names
+names = colnames(otutab)
+# Remove last 17 characters
+newnames = gsub('.{17}$', '', names)
+# Check out names
+newnames
+
+# Assign new names to samples
+colnames(otutab) = newnames
+
+# Same thing if we wanted to simplify OTU names to IDs
+# Instead of sequences (although that's useful)
+otunames=row.names(otutab)
+length(otunames)
+newotunames = paste("OTU",rep(1:length(otunames)),sep="")
+head(newotunames)
+row.names(otutab) = newotunames
+head(otutab)
+
+# Cut off the sampling ID to match metadata
+for (i in 1:length(colnames(otutab))){
+  newname = strsplit(colnames(otutab[i]),"_")[[i]][1]
+  colnames(otutab)[i]=newname
+}
+
+# Import sample data
+samdat = read.csv("../2020-03-12-hatch-final-data-merged/source/metrology-compiled/2020-03-12-hatch-data-merged-as-metadata.csv", header=T)
+# samdat$Sample.ID = as.character(samdat$Sample.ID)
+# samdat$Sample.ID[1:9] = paste("00",samdat$Sample.ID[1:9],sep="")
+# samdat$Sample.ID[10:length(samdat$Sample.ID)] = paste("0",samdat$Sample.ID[10:length(samdat$Sample.ID)],sep="")
+
+# Check we have all the same sample names now
+samdat$Sample.ID[1:65] == colnames(otutab)[1:65]
+samdat$Sample.ID[66:125] == colnames(otutab)[66:125]
+samdat = sample_data(samdat)
+
+# Exponentiate all pH values
+samdat$DNA.Extr.Hplus.After.C1 <- 10^-samdat$DNA.Extr.pH.After.C1
+samdat$DNA.Extr.Hplus.After.C2 <- 10^-samdat$DNA.Extr.pH.After.C2
+samdat$Lab.CO2.Hplus.one2one <- 10^-samdat$Lab.CO2.pH.one2one
+samdat$Lab.CO2.Hplus.one2two <- 10^-samdat$Lab.CO2.pH.one2two
+samdat$Lab.CO2.Hplus.one2three <- 10^-samdat$Lab.CO2.pH.one2three
+samdat$Lab.CO2.Hplus.one2four <- 10^-samdat$Lab.CO2.pH.one2four
+samdat$High.CO2.Hplus.one2one <- 10^-samdat$High.CO2.pH.one2one
+samdat$High.CO2.Hplus.one2two <- 10^-samdat$High.CO2.pH.one2two
+samdat$High.CO2.Hplus.one2three <- 10^-samdat$High.CO2.pH.one2three
+samdat$High.CO2.Hplus.one2four <- 10^-samdat$High.CO2.pH.one2four
+
+row.names(samdat) = samdat$Sample.ID
+
+# Create phyloseq object
+ps = phyloseq(otu_table=otutab,sample_data=samdat)
+
+library(dplyr)
+
+# Checking total read depth
+Depth = data.frame(sample_sums(ps))
+Depth$Sample.ID = row.names(Depth)
+colnames(Depth)[1] = "SampleSums"
+Depth = Depth %>%
+  arrange(SampleSums)
+head(Depth)
+
+# It looked to me like this has already been done (no Compost or Muck)
+# We don't want the Spooner samples removed anyway, I think
+ps = subset_samples(ps, Sample.ID != "049-W3-Compost" & Sample.ID!="004-K2-Muck" & Sample.ID!="028-S-0-30" & Sample.ID!="029-S-30-60")
+
+# Melt
+ps.melt = psmelt(ps)
+head(ps.melt)
+
+hist(sample_sums(ps))
+
+# Relative abundances
+ps.norm = transform_sample_counts(ps,function(x) x/sum(x))
+head(otu_table(ps.norm))
+sample_sums(ps.norm)
+# Looks good
+
+# Spooner Vs. Wisconsin
+ps.wisc <- subset_samples(ps, Study=="Wisconsin")
+ps.spoon <- subset_samples(ps, Study=="Spooner")
+
+ps.norm.wisc <- subset_samples(ps.norm, Study=="Wisconsin")
+ps.norm.spoon <- subset_samples(ps.norm, Study=="Spooner")
+```
+
+*MJB*: Let's try this again, correctly this time. 
+
+```{r }
+df.wisc = as(sample_data(ps.norm.wisc), "data.frame")
+d.wisc = distance(ps.norm.wisc, method = "bray")
+Lab.CO2.pH.one2one.wisc <- adonis(d.wisc ~ Lab.CO2.pH.one2one, data=df.wisc)
+Lab.CO2.pH.one2one.wisc
+Lab.CO2.pH.one2two.wisc <- adonis(d.wisc ~ Lab.CO2.pH.one2two, data=df.wisc)
+Lab.CO2.pH.one2two.wisc
+Lab.CO2.pH.one2three.wisc <- adonis(d.wisc ~ Lab.CO2.pH.one2three, data=df.wisc)
+Lab.CO2.pH.one2three.wisc
+Lab.CO2.pH.one2four.wisc <- adonis(d.wisc ~ Lab.CO2.pH.one2four, data=df.wisc)
+Lab.CO2.pH.one2four.wisc
+```
+
+```{r}
+Lab.CO2.Hplus.one2one.wisc <- adonis(d.wisc ~ Lab.CO2.Hplus.one2one, data=df.wisc)
+Lab.CO2.Hplus.one2one.wisc
+Lab.CO2.Hplus.one2two.wisc <- adonis(d.wisc ~ Lab.CO2.Hplus.one2two, data=df.wisc)
+Lab.CO2.Hplus.one2two.wisc
+Lab.CO2.Hplus.one2three.wisc <- adonis(d.wisc ~ Lab.CO2.Hplus.one2three, data=df.wisc)
+Lab.CO2.Hplus.one2three.wisc
+Lab.CO2.Hplus.one2four.wisc <- adonis(d.wisc ~ Lab.CO2.Hplus.one2four, data=df.wisc)
+Lab.CO2.Hplus.one2four.wisc
+```
+
+```{r }
+High.CO2.pH.one2one.wisc <- adonis(d.wisc ~ High.CO2.pH.one2one, data=df.wisc)
+High.CO2.pH.one2one.wisc
+High.CO2.pH.one2two.wisc <- adonis(d.wisc ~ High.CO2.pH.one2two, data=df.wisc)
+High.CO2.pH.one2two.wisc
+High.CO2.pH.one2three.wisc <- adonis(d.wisc ~ High.CO2.pH.one2three, data=df.wisc)
+High.CO2.pH.one2three.wisc
+High.CO2.pH.one2four.wisc <- adonis(d.wisc ~ High.CO2.pH.one2four, data=df.wisc)
+High.CO2.pH.one2four.wisc
+```
+
+```{r}
+High.CO2.Hplus.one2one.wisc <- adonis(d.wisc ~ High.CO2.Hplus.one2one, data=df.wisc)
+High.CO2.Hplus.one2one.wisc
+High.CO2.Hplus.one2two.wisc <- adonis(d.wisc ~ High.CO2.Hplus.one2two, data=df.wisc)
+High.CO2.Hplus.one2two.wisc
+High.CO2.Hplus.one2three.wisc <- adonis(d.wisc ~ High.CO2.Hplus.one2three, data=df.wisc)
+High.CO2.Hplus.one2three.wisc
+High.CO2.Hplus.one2four.wisc <- adonis(d.wisc ~ High.CO2.Hplus.one2four, data=df.wisc)
+High.CO2.Hplus.one2four.wisc
+```
+
+```{r }
+df.spoon = as(sample_data(ps.norm.spoon), "data.frame")
+d.spoon = distance(ps.norm.spoon, method = "bray")
+Lab.CO2.pH.one2one.spoon <- adonis(d.spoon ~ Lab.CO2.pH.one2one, data=df.spoon)
+Lab.CO2.pH.one2one.spoon
+Lab.CO2.pH.one2two.spoon <- adonis(d.spoon ~ Lab.CO2.pH.one2two, data=df.spoon)
+Lab.CO2.pH.one2two.spoon
+Lab.CO2.pH.one2three.spoon <- adonis(d.spoon ~ Lab.CO2.pH.one2three, data=df.spoon)
+Lab.CO2.pH.one2three.spoon
+Lab.CO2.pH.one2four.spoon <- adonis(d.spoon ~ Lab.CO2.pH.one2four, data=df.spoon)
+Lab.CO2.pH.one2four.spoon
+```
+
+```{r}
+Lab.CO2.Hplus.one2one.spoon <- adonis(d.spoon ~ Lab.CO2.Hplus.one2one, data=df.spoon)
+Lab.CO2.Hplus.one2one.spoon
+Lab.CO2.Hplus.one2two.spoon <- adonis(d.spoon ~ Lab.CO2.Hplus.one2two, data=df.spoon)
+Lab.CO2.Hplus.one2two.spoon
+Lab.CO2.Hplus.one2three.spoon <- adonis(d.spoon ~ Lab.CO2.Hplus.one2three, data=df.spoon)
+Lab.CO2.Hplus.one2three.spoon
+Lab.CO2.Hplus.one2four.spoon <- adonis(d.spoon ~ Lab.CO2.Hplus.one2four, data=df.spoon)
+Lab.CO2.Hplus.one2four.spoon
+```
+
+```{r }
+High.CO2.pH.one2one.spoon <- adonis(d.spoon ~ High.CO2.pH.one2one, data=df.spoon)
+High.CO2.pH.one2one.spoon
+High.CO2.pH.one2two.spoon <- adonis(d.spoon ~ High.CO2.pH.one2two, data=df.spoon)
+High.CO2.pH.one2two.spoon
+High.CO2.pH.one2three.spoon <- adonis(d.spoon ~ High.CO2.pH.one2three, data=df.spoon)
+High.CO2.pH.one2three.spoon
+High.CO2.pH.one2four.spoon <- adonis(d.spoon ~ High.CO2.pH.one2four, data=df.spoon)
+High.CO2.pH.one2four.spoon
+```
+
+```{r}
+High.CO2.Hplus.one2one.spoon <- adonis(d.spoon ~ High.CO2.Hplus.one2one, data=df.spoon)
+High.CO2.Hplus.one2one.spoon
+High.CO2.Hplus.one2two.spoon <- adonis(d.spoon ~ High.CO2.Hplus.one2two, data=df.spoon)
+High.CO2.Hplus.one2two.spoon
+High.CO2.Hplus.one2three.spoon <- adonis(d.spoon ~ High.CO2.Hplus.one2three, data=df.spoon)
+High.CO2.Hplus.one2three.spoon
+High.CO2.Hplus.one2four.spoon <- adonis(d.spoon ~ High.CO2.Hplus.one2four, data=df.spoon)
+High.CO2.Hplus.one2four.spoon
+```
+
+```{r rsq-plot, fig.width=6, fig.height=5}
+R.squared <- c(Lab.CO2.pH.one2one.wisc$aov.tab[1,5],
+               Lab.CO2.Hplus.one2one.wisc$aov.tab[1,5],
+               Lab.CO2.pH.one2two.wisc$aov.tab[1,5],
+               Lab.CO2.Hplus.one2two.wisc$aov.tab[1,5],
+               Lab.CO2.pH.one2three.wisc$aov.tab[1,5],
+               Lab.CO2.Hplus.one2three.wisc$aov.tab[1,5],
+               Lab.CO2.pH.one2four.wisc$aov.tab[1,5],
+               Lab.CO2.Hplus.one2four.wisc$aov.tab[1,5],
+               High.CO2.pH.one2one.wisc$aov.tab[1,5],
+               High.CO2.Hplus.one2one.wisc$aov.tab[1,5],
+               High.CO2.pH.one2two.wisc$aov.tab[1,5],
+               High.CO2.Hplus.one2two.wisc$aov.tab[1,5],
+               High.CO2.pH.one2three.wisc$aov.tab[1,5],
+               High.CO2.Hplus.one2three.wisc$aov.tab[1,5],
+               High.CO2.pH.one2four.wisc$aov.tab[1,5],
+               High.CO2.Hplus.one2four.wisc$aov.tab[1,5],
+               Lab.CO2.pH.one2one.spoon$aov.tab[1,5],
+               Lab.CO2.Hplus.one2one.spoon$aov.tab[1,5],
+               Lab.CO2.pH.one2two.spoon$aov.tab[1,5],
+               Lab.CO2.Hplus.one2two.spoon$aov.tab[1,5],
+               Lab.CO2.pH.one2three.spoon$aov.tab[1,5],
+               Lab.CO2.Hplus.one2three.spoon$aov.tab[1,5],
+               Lab.CO2.pH.one2four.spoon$aov.tab[1,5],
+               Lab.CO2.Hplus.one2four.spoon$aov.tab[1,5],
+               High.CO2.pH.one2one.spoon$aov.tab[1,5],
+               High.CO2.Hplus.one2one.spoon$aov.tab[1,5],
+               High.CO2.pH.one2two.spoon$aov.tab[1,5],
+               High.CO2.Hplus.one2two.spoon$aov.tab[1,5],
+               High.CO2.pH.one2three.spoon$aov.tab[1,5],
+               High.CO2.Hplus.one2three.spoon$aov.tab[1,5],
+               High.CO2.pH.one2four.spoon$aov.tab[1,5],
+               High.CO2.Hplus.one2four.spoon$aov.tab[1,5]
+               )
+dat.rsq <- read.csv("rsq-data.csv", header=T)
+dat.rsq$R.squared <- R.squared
+# str(dat.rsq)
+ggplot(dat.rsq, aes(Water.Soil.Ratio, R.squared, shape = Carbon.Dioxide)) + geom_point(color="black", size = 2, alpha = 0.4) + geom_point(color="lightgrey", size = 1) + theme_bw() + facet_wrap(~Study~Acidity.Metric) + labs(x = "Solution-to-Soil Ratio by Mass", y = "R-squared Value (PERMANOVA)") + ylim(0, NA)
+```
+
+
+
+
+```{r }
+# Just running the sample numbers to see what the R2 is for an arbitrary factor. 
+sample.num.wisc <- adonis(d.wisc ~ Sample.Num, data=df.wisc)
+sample.num.wisc
+sample.random.wisc <- adonis(d.wisc ~ Random.Num.1.to.65, data=df.wisc)
+sample.random.wisc
+```
+
+```{r}
+clay.wisc <- adonis(d.wisc ~ Perc.Clay, data=df.wisc)
+clay.wisc
+dnac1.wisc <- adonis(d.wisc ~ DNA.Extr.pH.After.C1, data=df.wisc)
+dnac1.wisc
+dnac2.wisc <- adonis(d.wisc ~ DNA.Extr.pH.After.C2, data=df.wisc)
+dnac2.wisc
+om.wisc <- adonis(d.wisc ~ OM.perc, data=df.wisc)
+om.wisc
+n.wisc <- adonis(d.wisc ~ Total.N.perc, data=df.wisc)
+n.wisc
+depth.wisc <- adonis(d.wisc ~ Upper.Depth.cm, data=df.wisc)
+depth.wisc
+```
+
+```{r }
+# Just running the sample numbers to see what the R2 is for an arbitrary factor. 
+sample.num.spoon <- adonis(d.spoon ~ Sample.Num, data=df.spoon)
+sample.num.spoon
+sample.random.spoon <- adonis(d.spoon ~ Random.Num.1.to.65, data=df.spoon)
+sample.random.spoon
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

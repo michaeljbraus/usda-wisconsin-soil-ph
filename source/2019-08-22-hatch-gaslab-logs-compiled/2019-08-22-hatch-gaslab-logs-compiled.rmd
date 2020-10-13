@@ -1,0 +1,41 @@
+---
+title: "2019-08-22-hatch-gaslab-logs-compiled"
+author: "Michael J. Braus"
+date: "`r Sys.Date()`"
+output:
+  pdf_document:
+    toc: yes
+    toc_depth: 2
+    number_sections: true
+---
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(fig.path = 'Output/', echo = TRUE, warning = FALSE, message = FALSE, cache = TRUE, fig.width = 5, fig.height = 4)
+```
+
+```{r}
+library(ggplot2) 
+dat <- read.csv("2019-08-22-hatch-gaslab-logs-compiled.csv", header=T)
+dat$time.minute <- dat$time.second/60
+dat$CO2.ppm <- as.numeric(dat$CO2.ppm)
+str(dat)
+```
+
+```{r}
+p <- ggplot(dat, aes(x = time.minute, y = CO2.ppm*0.0001, color = date))
+p + geom_point() + facet_wrap(~date, scales="free_x") + theme_bw()
+```
+
+Here is just the day of the high-CO2 chamber (2019-08-13): 
+
+```{r}
+dat.highco2 <- subset(dat, date=="2019-08-13")
+dat.highco2 <- subset(dat.highco2, CO2.ppm>20900)
+p <- ggplot(dat.highco2, aes(x = time.minute, y = CO2.ppm*0.0001))
+p + geom_point() + theme_bw()
+mean(dat.highco2$CO2.ppm) # ppm CO2
+sd(dat.highco2$CO2.ppm) # ppm CO2
+mean(dat.highco2$CO2.ppm*0.0001) # percent CO2
+sd(dat.highco2$CO2.ppm*0.0001) # percent CO2
+mean(dat.highco2$CO2.ppm)/415 # fold change relative to 415 ppm
+```
